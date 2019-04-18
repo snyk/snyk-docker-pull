@@ -342,16 +342,16 @@ export class DockerPull {
       stagingDir.name
     );
 
-    const dockerBin: string = await DockerPull.findDockerBinary();
+    const dockerBinary: string = await DockerPull.findDockerBinary();
 
     const stdout = (await subProcess.execute(
-      dockerBin,
+      dockerBinary,
       ["load", "-i", "image.tar"],
       stagingDir.name
     )).stdout;
     // Loaded image ID: sha256:36456e9e9cb7c4b17d97461a5aeb062a481401e3d2b559285c7083d8e7f8efa6
     const imgDigest: Digest = stdout.split("sha256:")[1].trim();
-    await subProcess.execute(dockerBin, [
+    await subProcess.execute(dockerBinary, [
       "tag",
       `${imgDigest}`,
       `${repo}:${tag}`
