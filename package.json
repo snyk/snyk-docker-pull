@@ -1,7 +1,6 @@
 {
-  "name": "@snyk/docker-pull",
-  "private": true,
-  "description": "",
+  "name": "snyk-docker-pull",
+  "description": "CLI-less docker pull",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
