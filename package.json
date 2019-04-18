@@ -1,7 +1,6 @@
 {
-  "name": "@snyk/docker-pull",
-  "private": true,
-  "description": "",
+  "name": "snyk-docker-pull",
+  "description": "CLI-less docker pull",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -16,9 +15,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/snyk/docker-pull.git"
-  },
-  "publishConfig": {
-    "access": "restricted"
   },
   "author": "snyk.io",
   "license": "Apache-2.0",
