@@ -7,7 +7,8 @@
     "test": "jest --verbose --runInBand",
     "lint": "prettier --check '**/*.ts' && tslint --format stylish '**/*.ts' --exclude 'node_modules/**'",
     "format": "prettier --loglevel warn --write '**/*.ts' && tslint --fix --format stylish '**/*.ts' --exclude 'node_modules/**'",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "dev": "tsc-watch --project tsconfig.json --onSuccess 'bin/start' | ./node_modules/.bin/bunyan"
   },
   "files": [
     "dist"
@@ -24,15 +25,24 @@
     "@types/tmp": "^0.1.0",
     "jest": "^24.7.1",
     "prettier": "^1.16.4",
+    "supertest": "^4.0.2",
     "ts-jest": "^24.0.2",
     "ts-node": "^8.0.3",
+    "tsc-watch": "^2.1.2",
     "tslint": "^5.15.0",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.4.3"
   },
   "dependencies": {
+    "@snyk/log": "^2.8.0",
     "child-process": "^1.0.2",
+    "compression": "^1.7.4",
+    "express": "^4.16.4",
+    "mock-fs": "^4.8.0",
+    "newrelic": "^5.6.4",
     "request-promise-native": "^1.0.7",
+    "response-time": "^2.3.2",
+    "snyk-config": "^2.2.1",
     "tmp": "^0.1.0"
   }
 }

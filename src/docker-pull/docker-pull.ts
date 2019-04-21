@@ -2,8 +2,9 @@ import * as fs from "fs";
 import * as path from "path";
 import * as request from "request-promise-native";
 import * as tmp from "tmp";
-import { Digest, Layer, LayerConfig, promiseWrite } from "./common";
-import { LayersCache } from "./layers-cache/layers-cache";
+import { Digest, Layer, LayerConfig } from "../common/types";
+import { promiseWrite } from "../common/utils";
+import { LayersCacheClient } from "../layers-cache/client";
 import * as subProcess from "./sub-process";
 
 export interface RegistryConfig {
@@ -76,7 +77,7 @@ export class DockerPull {
       });
   }
 
-  constructor(private layersCache?: LayersCache) {}
+  constructor(private layersCache?: LayersCacheClient) {}
 
   public async pull(
     // TODO (leon): refactor
@@ -138,9 +139,6 @@ export class DockerPull {
       throw new Error(err.stderr);
     } finally {
       stagingDir.removeCallback();
-      if (this.layersCache) {
-        this.layersCache.refreshCache(org, layersConfigs);
-      }
     }
   }
 

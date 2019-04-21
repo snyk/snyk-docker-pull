@@ -1,0 +1,13 @@
+{
+  "LOGGING": {
+    "name": "docker-layers-cache",
+    "level": "info"
+  },
+  "PORT": 17600,
+  "NEWRELIC": {
+    "agent_enabled": false
+  },
+  "PAYLOAD_MAX_SIZE": "50mb",
+  "SERVER_CONN_TIMEOUT": 300000,
+  "SOURCE_CREDENTIALS_HEADER": "snyk-source-credentials"
+}

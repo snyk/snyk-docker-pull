@@ -1,0 +1,12 @@
+{
+  "LOGGING": {
+    "name": "docker-layers-cache",
+    "level": "debug"
+  },
+  "PORT": 17600,
+  "NEWRELIC": {
+    "agent_enabled": true,
+    "app_name": "docker-layers-cache dev"
+  },
+  "SENTRY_DSN": "secret-missing"
+}
