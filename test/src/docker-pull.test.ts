@@ -1,4 +1,3 @@
-import * as tmp from "tmp";
 import { DockerPull, RegistryConfig } from "../../src/docker-pull";
 import { removeImage } from "../utils";
 
@@ -13,11 +12,15 @@ test("public image pull", async () => {
 });
 
 test("private image pull", async () => {
+  const username = process.env.SNYK_DOCKER_HUB_USERNAME;
+  const password = process.env.SNYK_DOCKER_HUB_PASSWORD;
+  const repo = process.env.SNYK_DOCKER_HUB_REPOSITORY;
+
   const dockerPull: DockerPull = new DockerPull();
   const imgSha: string = await dockerPull.pull(
-    "snykgoof/dockerhub-goof",
-    "wordpress33",
-    { username: "snykgoof", password: "123456" } as RegistryConfig
+    `${username}/${repo}`,
+    "alpine",
+    { username, password } as RegistryConfig
   );
   expect(imgSha).toBeDefined();
 
