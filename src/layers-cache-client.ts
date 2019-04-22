@@ -35,7 +35,10 @@ export class LayersCacheClient {
     return await request({
       uri: `${this.hostname}/get-layer`,
       method: "GET",
-      encoding: null
+      encoding: null,
+      headers: {
+        digest
+      }
     });
   }
 }
