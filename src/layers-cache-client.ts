@@ -12,7 +12,7 @@ export class LayersCacheClient {
         method: "POST",
         body: layer.blob,
         headers: {
-          type: "application/octet-stream",
+          "Content-Type": "application/octet-stream",
           digest: layer.config.digest
         }
       });
