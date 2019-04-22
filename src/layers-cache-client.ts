@@ -8,10 +8,11 @@ export class LayersCacheClient {
   public async saveLayers(layers: Layer[]): Promise<void> {
     for (const layer of layers) {
       await request({
-        uri: `${this.hostname}/api/save-layer`,
+        uri: `${this.hostname}/save-layer`,
         method: "POST",
         body: layer.blob,
         headers: {
+          type: "application/octet-stream",
           digest: layer.config.digest
         }
       });
@@ -32,7 +33,7 @@ export class LayersCacheClient {
 
   private async getBlob(digest: Digest): Promise<Buffer> {
     return await request({
-      uri: `${this.hostname}/api/get-layer`,
+      uri: `${this.hostname}/get-layer`,
       method: "GET",
       encoding: null
     });
