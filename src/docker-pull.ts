@@ -157,6 +157,9 @@ export class DockerPull {
     const missingLayersConfigs: LayerConfig[] = layersConfigs.filter(
       (cfg: LayerConfig) => !cachedDigests.includes(cfg.digest)
     );
+    
+    const t0 = new Date().getTime();
+    console.log('starting to fetch missing layers from the internet...')
     const missingLayers: Layer[] = await Promise.all(
       missingLayersConfigs.map(async (config: LayerConfig) => {
         const blob: Buffer = await this.getLayer(
@@ -169,6 +172,8 @@ export class DockerPull {
         return { config, blob };
       })
     );
+    const t1 = new Date().getTime();
+    console.log('done in', t1 - t0, 'milliseconds');
     return [cachedLayers, missingLayers];
   }
 
