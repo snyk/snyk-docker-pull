@@ -239,7 +239,8 @@ export class DockerPull {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
-          Accept: `${mediaType}`
+          Accept: `${mediaType}`,
+          "Cache-Control": "no-cache, no-store",
         },
         encoding: null,
         uri: `https://${registryBase}/v2/${repo}/blobs/${sha}`
