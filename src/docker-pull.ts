@@ -156,6 +156,7 @@ export class DockerPull {
     const cachedDigests: Digest[] = cachedLayers.map(
       (layer: Layer) => layer.config.digest
     );
+    console.log('cached digests:', cachedDigests);
     const missingLayersConfigs: LayerConfig[] = layersConfigs.filter(
       (cfg: LayerConfig) => !cachedDigests.includes(cfg.digest)
     );
