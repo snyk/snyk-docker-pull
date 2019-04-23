@@ -162,7 +162,7 @@ export class DockerPull {
     );
     
     const t0 = new Date().getTime();
-    console.log('starting to fetch missing layers from the internet...')
+    console.log(`starting to fetch (${missingLayersConfigs.length}) missing layers from the internet...`)
     const missingLayers: Layer[] = await Promise.all(
       missingLayersConfigs.map(async (config: LayerConfig) => {
         const blob: Buffer = await this.getLayer(
