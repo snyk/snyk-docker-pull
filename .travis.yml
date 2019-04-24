@@ -5,11 +5,10 @@ language: node_js
 node_js:
   - "10"
 cache: npm
-script:
-  - "npm run lint"
-  - "npm test"
 jobs:
   include:
+    - stage: Test
+      script: npm test
     - stage: npm release
       if: branch = master AND type != pull_request
       node_js: "10"
