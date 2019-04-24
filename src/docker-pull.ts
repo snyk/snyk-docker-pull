@@ -6,6 +6,12 @@ import { Digest, Layer, LayerConfig, promiseWrite } from "./common";
 import { LayersCacheClient } from "./layers-cache-client";
 import * as subProcess from "./sub-process";
 
+export interface DockerPullResult {
+  imageDigest: Digest;
+  cachedLayersDigests: Digest[];
+  missingLayersDigests: Digest[];
+  pullDuration: number;
+}
 export interface RegistryConfig {
   username: string;
   password: string;
@@ -84,7 +90,7 @@ export class DockerPull {
     tag: string,
     registryConfig?: RegistryConfig,
     org?: string
-  ): Promise<Digest> {
+  ): Promise<DockerPullResult> {
     registryConfig = DockerPull.parseRegistryConfig(registryConfig);
 
     const token: string = await this.getToken(
@@ -111,6 +117,7 @@ export class DockerPull {
       registryConfig.base
     );
 
+    const t0 = Date.now();
     const layersConfigs: LayerConfig[] = manifest.layers;
     const [cachedLayers, missingLayers] = await this.getLayers(
       layersConfigs,
@@ -118,14 +125,16 @@ export class DockerPull {
       repo,
       registryConfig
     );
+    const pullDuration = Date.now() - t0;
 
     if (this.layersCache) {
       await this.layersCache.saveLayers(missingLayers);
     }
 
+    let imageDigest: Digest;
     const stagingDir: tmp.DirResult = tmp.dirSync({ unsafeCleanup: true });
     try {
-      return await this.loadImage(
+      imageDigest = await this.loadImage(
         imageConfigMetadata.digest,
         imageConfig,
         layersConfigs,
@@ -139,6 +148,13 @@ export class DockerPull {
     } finally {
       stagingDir.removeCallback();
     }
+
+    return {
+      imageDigest,
+      cachedLayersDigests: cachedLayers.map(layer => layer.config.digest),
+      missingLayersDigests: missingLayers.map(layer => layer.config.digest),
+      pullDuration
+    };
   }
 
   private async getLayers(
@@ -153,11 +169,9 @@ export class DockerPull {
     const cachedDigests: Digest[] = cachedLayers.map(
       (layer: Layer) => layer.config.digest
     );
-    console.log('cached digests:', cachedDigests);
     const missingLayersConfigs: LayerConfig[] = layersConfigs.filter(
       (cfg: LayerConfig) => !cachedDigests.includes(cfg.digest)
     );
-    
     const missingLayers: Layer[] = await Promise.all(
       missingLayersConfigs.map(async (config: LayerConfig) => {
         const blob: Buffer = await this.getLayer(
@@ -170,7 +184,6 @@ export class DockerPull {
         return { config, blob };
       })
     );
-    const t1 = new Date().getTime();
     return [cachedLayers, missingLayers];
   }
 
@@ -237,7 +250,7 @@ export class DockerPull {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: `${mediaType}`,
-          "Cache-Control": "no-cache, no-store",
+          "Cache-Control": "no-cache, no-store"
         },
         encoding: null,
         uri: `https://${registryBase}/v2/${repo}/blobs/${sha}`
