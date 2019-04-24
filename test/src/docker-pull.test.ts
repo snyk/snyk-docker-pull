@@ -5,10 +5,10 @@ jest.setTimeout(40000);
 
 test("public image pull", async () => {
   const dockerPull: DockerPull = new DockerPull();
-  const imgSha: string = await dockerPull.pull("library/node", "alpine");
-  expect(imgSha).toBeDefined();
+  const imageDigest: string = (await dockerPull.pull("library/node", "alpine")).imageDigest;
+  expect(imageDigest).toBeDefined();
 
-  await removeImage(imgSha);
+  await removeImage(imageDigest);
 });
 
 test("private image pull", async () => {
@@ -17,12 +17,12 @@ test("private image pull", async () => {
   const repo = process.env.SNYK_DOCKER_HUB_REPOSITORY;
 
   const dockerPull: DockerPull = new DockerPull();
-  const imgSha: string = await dockerPull.pull(
+  const imageDigest: string = (await dockerPull.pull(
     `${username}/${repo}`,
     "alpine",
     { username, password } as RegistryConfig
-  );
-  expect(imgSha).toBeDefined();
+  )).imageDigest;
+  expect(imageDigest).toBeDefined();
 
-  await removeImage(imgSha);
+  await removeImage(imageDigest);
 });
