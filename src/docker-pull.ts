@@ -27,7 +27,7 @@ interface Manifest {
 }
 
 const DOCKER_HUB_REGISTRY_BASE = "registry-1.docker.io";
-const DOCKER_HUB_AUTH_BASE = "https://auth.docker.io/token";
+const DOCKER_HUB_AUTH_BASE = "auth.docker.io/token";
 const DOCKER_HUB_REGISTRY_SERVICE = "registry.docker.io";
 
 const DEFAULT_LAYER_JSON = {
@@ -196,7 +196,7 @@ export class DockerPull {
   ): Promise<string> {
     const config: any = {
       method: "GET",
-      uri: authBase,
+      uri: `https://${authBase}`,
       qs: {
         service: `${registryService}`,
         scope: `repository:${repo}:pull`
