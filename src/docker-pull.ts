@@ -139,6 +139,7 @@ export class DockerPull {
         imageConfig,
         layersConfigs,
         [...cachedLayers, ...missingLayers],
+        registryConfig.base,
         repo,
         tag,
         stagingDir
@@ -289,6 +290,7 @@ export class DockerPull {
     imageConfig: any,
     layersConfigs: LayerConfig[],
     layers: Layer[],
+    registryBase: string,
     repo: string,
     tag: string,
     stagingDir: tmp.DirResult
@@ -368,7 +370,7 @@ export class DockerPull {
     await subProcess.execute(dockerBinary, [
       "tag",
       `${imgDigest}`,
-      `${repo}:${tag}`
+      `${registryBase}/${repo}:${tag}`
     ]);
 
     return imgDigest;
