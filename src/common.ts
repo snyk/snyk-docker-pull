@@ -1,14 +1,9 @@
+import { types } from "docker-registry-v2-client";
 import * as fs from "fs";
 import { promisify } from "util";
 
-export type Digest = string;
-export interface LayerConfig {
-  mediaType: string;
-  size: number;
-  digest: Digest;
-}
 export interface Layer {
-  config: LayerConfig;
+  config: types.LayerConfig;
   blob: Buffer;
 }
 
