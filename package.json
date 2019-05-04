@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "child-process": "^1.0.2",
+    "docker-registry-v2-client": "^1.4.1",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "tmp": "^0.1.0"
