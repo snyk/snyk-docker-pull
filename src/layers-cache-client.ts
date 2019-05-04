@@ -1,6 +1,6 @@
+import { types } from "docker-registry-v2-client";
 import * as request from "request-promise-native";
-
-import { Digest, Layer, LayerConfig } from "./common";
+import { Layer } from "./common";
 
 export class LayersCacheClient {
   constructor(private hostname: string) {}
@@ -19,7 +19,7 @@ export class LayersCacheClient {
     }
   }
 
-  public async getLayers(configs: LayerConfig[]): Promise<Layer[]> {
+  public async getLayers(configs: types.LayerConfig[]): Promise<Layer[]> {
     const result: Layer[] = [];
     for (const config of configs) {
       const blob = await this.getBlob(config.digest);
@@ -31,7 +31,7 @@ export class LayersCacheClient {
     return result;
   }
 
-  private async getBlob(digest: Digest): Promise<Buffer> {
+  private async getBlob(digest: string): Promise<Buffer> {
     return await request({
       uri: `${this.hostname}/get-layer`,
       method: "GET",
