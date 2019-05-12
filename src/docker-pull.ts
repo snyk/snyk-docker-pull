@@ -195,7 +195,10 @@ export class DockerPull {
 
     imageDigest = imageDigest.replace("sha256:", "");
     // write image json
-    fs.writeFileSync(`${path.join(imgDir, imageDigest)}.json`, imageConfig);
+    fs.writeFileSync(
+      `${path.join(imgDir, imageDigest)}.json`,
+      JSON.stringify(imageConfig)
+    );
 
     // write manifest.json
     const manifestJson = [
