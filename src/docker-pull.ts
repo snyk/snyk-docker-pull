@@ -1,5 +1,5 @@
 import { types } from "docker-registry-v2-client";
-import * as dockerClient from "docker-registry-v2-client";
+import * as registryClient from "docker-registry-v2-client";
 import * as fs from "fs";
 import * as path from "path";
 import * as tmp from "tmp";
@@ -57,7 +57,7 @@ export class DockerPull {
     repo: string,
     tag: string
   ): Promise<DockerPullResult> {
-    const manifest: types.ImageManifest = await dockerClient.getManifest(
+    const manifest: types.ImageManifest = await registryClient.getManifest(
       registryBase,
       repo,
       tag,
@@ -66,7 +66,7 @@ export class DockerPull {
     );
 
     const imageConfigMetadata: types.LayerConfig = manifest.config;
-    const imageConfig = await dockerClient.getImageConfig(
+    const imageConfig = await registryClient.getImageConfig(
       registryBase,
       repo,
       imageConfigMetadata.digest,
@@ -134,7 +134,7 @@ export class DockerPull {
     );
     const missingLayers: Layer[] = await Promise.all(
       missingLayersConfigs.map(async (config: types.LayerConfig) => {
-        const blob: Buffer = await dockerClient.getLayer(
+        const blob: Buffer = await registryClient.getLayer(
           registryBase,
           repo,
           config.digest,
@@ -195,10 +195,7 @@ export class DockerPull {
 
     imageDigest = imageDigest.replace("sha256:", "");
     // write image json
-    fs.writeFileSync(
-      `${path.join(imgDir, imageDigest)}.json`,
-      JSON.stringify(imageConfig)
-    );
+    fs.writeFileSync(`${path.join(imgDir, imageDigest)}.json`, imageConfig);
 
     // write manifest.json
     const manifestJson = [
@@ -222,7 +219,6 @@ export class DockerPull {
     );
 
     const dockerBinary: string = await DockerPull.findDockerBinary();
-
     const stdout = (await subProcess.execute(
       dockerBinary,
       ["load", "-i", "image.tar"],
