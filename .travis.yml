@@ -12,9 +12,7 @@ jobs:
     - stage: npm release
       if: branch = master AND type != pull_request
       node_js: "10"
-      script: skip
-      after_success:
-        - npx semantic-release
+      script: npx semantic-release
 branches:
   only:
     - master
