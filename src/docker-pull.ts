@@ -55,14 +55,16 @@ export class DockerPull {
     password: string,
     registryBase: string,
     repo: string,
-    tag: string
+    tag: string,
+    reqOptions = {} as any
   ): Promise<DockerPullResult> {
     const manifest: types.ImageManifest = await registryClient.getManifest(
       registryBase,
       repo,
       tag,
       username,
-      password
+      password,
+      reqOptions,
     );
 
     const imageConfigMetadata: types.LayerConfig = manifest.config;
@@ -71,9 +73,9 @@ export class DockerPull {
       repo,
       imageConfigMetadata.digest,
       username,
-      password
+      password,
+      reqOptions,
     );
-
     const t0 = Date.now();
     const layersConfigs: types.LayerConfig[] = manifest.layers;
     const [cachedLayers, missingLayers] = await this.getLayers(
@@ -81,7 +83,8 @@ export class DockerPull {
       registryBase,
       username,
       password,
-      repo
+      repo,
+      reqOptions,
     );
     const pullDuration = Date.now() - t0;
 
@@ -121,7 +124,8 @@ export class DockerPull {
     registryBase,
     username,
     password,
-    repo: string
+    repo: string,
+    reqOptions = {} as any
   ): Promise<[Layer[], Layer[]]> {
     const cachedLayers: Layer[] = this.layersCache
       ? await this.layersCache.getLayers(layersConfigs)
@@ -132,6 +136,7 @@ export class DockerPull {
     const missingLayersConfigs: types.LayerConfig[] = layersConfigs.filter(
       (cfg: types.LayerConfig) => !cachedDigests.includes(cfg.digest)
     );
+
     const missingLayers: Layer[] = await Promise.all(
       missingLayersConfigs.map(async (config: types.LayerConfig) => {
         const blob: Buffer = await registryClient.getLayer(
@@ -139,11 +144,13 @@ export class DockerPull {
           repo,
           config.digest,
           username,
-          password
+          password,
+          reqOptions
         );
         return { config, blob };
       })
     );
+
     return [cachedLayers, missingLayers];
   }
 
