@@ -19,6 +19,9 @@
     "url": "https://github.com/snyk/docker-pull.git"
   },
   "author": "snyk.io",
+  "publishConfig": {
+    "access": "restricted"
+  },
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/jest": "^24.0.15",
