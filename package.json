@@ -1,5 +1,5 @@
 {
-  "name": "snyk-docker-pull",
+  "name": "@snyk/snyk-docker-pull",
   "description": "CLI-less docker pull",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,6 +20,9 @@
   },
   "author": "snyk.io",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "restricted"
+  },
   "devDependencies": {
     "@types/jest": "^24.0.15",
     "@types/node": "^11.13.18",
