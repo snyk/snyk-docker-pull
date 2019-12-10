@@ -1,5 +1,5 @@
-import { types } from "docker-registry-v2-client";
-import * as registryClient from "docker-registry-v2-client";
+import { types } from "@snyk/docker-registry-v2-client";
+import * as registryClient from "@snyk/docker-registry-v2-client";
 import * as fs from "fs";
 import * as path from "path";
 import * as tmp from "tmp";
