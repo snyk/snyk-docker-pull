@@ -173,6 +173,10 @@ export class DockerPull {
     for (const layerConfig of layersConfigs) {
       const digest = layerConfig.digest.replace("sha256:", "");
       const layerDir = path.join(imgDir, digest);
+      // layer might already exist
+      if (fs.existsSync(layerDir)) {
+        continue;
+      }
       fs.mkdirSync(layerDir);
 
       // write layer.tar
