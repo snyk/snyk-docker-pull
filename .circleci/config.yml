@@ -64,6 +64,7 @@ jobs:
       - image: circleci/node:10
     steps:
       - checkout
+      - setup_remote_docker
       - attach_workspace:
           at: ~/snyk-docker-pull
       - run:
