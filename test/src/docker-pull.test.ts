@@ -9,13 +9,15 @@ test("private image pull", async () => {
   const repo = process.env.SNYK_DRA_DOCKER_HUB_REPOSITORY;
 
   const dockerPull: DockerPull = new DockerPull();
-  const imageDigest: string = (await dockerPull.pull(
-    username,
-    password,
-    "registry-1.docker.io",
-    repo,
-    "alpine"
-  )).imageDigest;
+  const imageDigest: string = (
+    await dockerPull.pull(
+      username,
+      password,
+      "registry-1.docker.io",
+      repo,
+      "alpine"
+    )
+  ).imageDigest;
   expect(imageDigest).toBeDefined();
 
   await removeImage(imageDigest);

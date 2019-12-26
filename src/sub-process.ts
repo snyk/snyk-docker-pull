@@ -1,4 +1,3 @@
-
 import * as childProcess from "child_process";
 
 export { execute, CmdOutput };
@@ -12,9 +11,9 @@ function execute(
   args?: string[],
   cwd?: string,
   env?: any,
-  shell: boolean = false,
+  shell: boolean = false
 ): Promise<CmdOutput> {
-  const spawnOptions: any =  { shell };
+  const spawnOptions: any = { shell };
   if (cwd) {
     spawnOptions.cwd = cwd;
   }
@@ -27,14 +26,14 @@ function execute(
     let stderr = "";
 
     const proc = childProcess.spawn(command, args, spawnOptions);
-    proc.stdout.on("data", (data) => {
+    proc.stdout.on("data", data => {
       stdout = stdout + data;
     });
-    proc.stderr.on("data", (data) => {
+    proc.stderr.on("data", data => {
       stderr = stderr + data;
     });
 
-    proc.on("close", (code) => {
+    proc.on("close", code => {
       const output = { stdout, stderr };
       if (code !== 0) {
         return reject(output);
