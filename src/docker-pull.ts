@@ -64,7 +64,7 @@ export class DockerPull {
       tag,
       username,
       password,
-      reqOptions,
+      reqOptions
     );
 
     const imageConfigMetadata: types.LayerConfig = manifest.config;
@@ -74,7 +74,7 @@ export class DockerPull {
       imageConfigMetadata.digest,
       username,
       password,
-      reqOptions,
+      reqOptions
     );
     const t0 = Date.now();
     const layersConfigs: types.LayerConfig[] = manifest.layers;
@@ -84,7 +84,7 @@ export class DockerPull {
       username,
       password,
       repo,
-      reqOptions,
+      reqOptions
     );
     const pullDuration = Date.now() - t0;
 
@@ -233,11 +233,13 @@ export class DockerPull {
     );
 
     const dockerBinary: string = await DockerPull.findDockerBinary();
-    const stdout = (await subProcess.execute(
-      dockerBinary,
-      ["load", "-i", "image.tar"],
-      stagingDir.name
-    )).stdout;
+    const stdout = (
+      await subProcess.execute(
+        dockerBinary,
+        ["load", "-i", "image.tar"],
+        stagingDir.name
+      )
+    ).stdout;
     // Loaded image ID: sha256:36456e9e9cb7c4b17d97461a5aeb062a481401e3d2b559285c7083d8e7f8efa6
     const imgDigest: string = stdout.split("sha256:")[1].trim();
     await subProcess.execute(dockerBinary, [
