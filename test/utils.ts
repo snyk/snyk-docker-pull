@@ -1,6 +1,6 @@
 import * as subProcess from "../src/sub-process";
 
-export async function removeImage(sha: string) {
+export async function removeImage(sha: string): Promise<subProcess.CmdOutput> {
   try {
     return await subProcess.execute(
       "docker",

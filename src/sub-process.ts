@@ -1,5 +1,5 @@
 import * as childProcess from "child_process";
-import { SpawnOptionsWithoutStdio } from "child_process";
+import { SpawnOptions } from "child_process";
 
 export interface CmdOutput {
   stdout: string;
@@ -13,7 +13,7 @@ export async function execute(
   env?: NodeJS.ProcessEnv,
   shell = false
 ): Promise<CmdOutput> {
-  const spawnOptions: SpawnOptionsWithoutStdio = { shell };
+  const spawnOptions: SpawnOptions = { shell };
   if (cwd) {
     spawnOptions.cwd = cwd;
   }
