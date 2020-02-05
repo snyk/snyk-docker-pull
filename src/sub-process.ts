@@ -1,19 +1,19 @@
 import * as childProcess from "child_process";
+import { SpawnOptions } from "child_process";
 
-export { execute, CmdOutput };
-interface CmdOutput {
+export interface CmdOutput {
   stdout: string;
   stderr: string;
 }
 
-function execute(
+export async function execute(
   command: string,
   args?: string[],
   cwd?: string,
-  env?: any,
-  shell: boolean = false
+  env?: NodeJS.ProcessEnv,
+  shell = false
 ): Promise<CmdOutput> {
-  const spawnOptions: any = { shell };
+  const spawnOptions: SpawnOptions = { shell };
   if (cwd) {
     spawnOptions.cwd = cwd;
   }
@@ -34,11 +34,11 @@ function execute(
     });
 
     proc.on("close", code => {
-      const output = { stdout, stderr };
+      const output: CmdOutput = { stdout, stderr };
       if (code !== 0) {
         return reject(output);
       }
       resolve(output);
     });
-  }) as Promise<CmdOutput>;
+  });
 }
