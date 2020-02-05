@@ -16,6 +16,7 @@ export interface DockerPullResult {
 
 const DEFAULT_LAYER_JSON = {
   created: "0001-01-01T00:00:00Z",
+  // eslint-disable-next-line @typescript-eslint/camelcase
   container_config: {
     Hostname: "",
     Domainname: "",
@@ -38,7 +39,7 @@ const DEFAULT_LAYER_JSON = {
 };
 
 export class DockerPull {
-  private static async findDockerBinary() {
+  private static async findDockerBinary(): Promise<string> {
     return subProcess
       .execute("which", ["docker"], undefined, undefined, true)
       .then(cmdOutput => cmdOutput.stdout.trim())
@@ -56,6 +57,8 @@ export class DockerPull {
     registryBase: string,
     repo: string,
     tag: string,
+    // weak typing on the client
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     reqOptions = {} as any
   ): Promise<DockerPullResult> {
     const manifest: types.ImageManifest = await registryClient.getManifest(
@@ -125,6 +128,8 @@ export class DockerPull {
     username,
     password,
     repo: string,
+    // weak typing on the client
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     reqOptions = {} as any
   ): Promise<[Layer[], Layer[]]> {
     const cachedLayers: Layer[] = this.layersCache
@@ -157,7 +162,7 @@ export class DockerPull {
   private async loadImage(
     // TODO (leon): refactor
     imageDigest: string,
-    imageConfig: any,
+    imageConfig: object,
     layersConfigs: types.LayerConfig[],
     layers: Layer[],
     registryBase: string,
