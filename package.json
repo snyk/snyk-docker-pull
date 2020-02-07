@@ -11,9 +11,6 @@
     "format": "prettier --loglevel warn --write '**/*.ts'",
     "prepare": "npm run build"
   },
-  "files": [
-    "dist"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/snyk/docker-pull.git"
