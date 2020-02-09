@@ -85,12 +85,19 @@ jobs:
           command: npm run build
   release:
     <<: *defaults
+    docker:
+      - image: node:10
     steps:
-      - checkout
+      - checkout_and_merge
+      - run:
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Build
+          command: npm run build
       - run:
           name: Release on GitHub
           command: npx semantic-release
-
 workflows:
   version: 2
   test_and_release:
