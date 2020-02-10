@@ -90,6 +90,9 @@ jobs:
     steps:
       - checkout_and_merge
       - run:
+          name: Use snyk-main npmjs user
+          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+      - run:
           name: Install dependencies
           command: npm install
       - run:
