@@ -20,7 +20,7 @@ commands:
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
       - run:
           name: Install dependencies
-          command: npm ci
+          command: npm install
       - save_cache:
           key: v1-npm-cache-{{ checksum "package-lock.json" }}
           paths:
