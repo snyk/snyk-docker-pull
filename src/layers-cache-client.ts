@@ -1,21 +1,26 @@
 import { types } from "@snyk/docker-registry-v2-client";
-import * as request from "request-promise-native";
+import * as needle from "needle";
 import { Layer } from "./common";
+import { NeedleResponse } from "needle";
 
 export class LayersCacheClient {
   constructor(private hostname: string) {}
 
   public async saveLayers(layers: Layer[]): Promise<void> {
     for (const layer of layers) {
-      await request({
-        uri: `${this.hostname}/save-layer`,
-        method: "POST",
-        body: layer.blob,
-        headers: {
-          "Content-Type": "application/octet-stream",
-          digest: layer.config.digest
+      const resp = await needle(
+        "post",
+        `${this.hostname}/save-layer`,
+        layer.blob,
+        {
+          headers: {
+            "Content-Type": "application/octet-stream",
+            digest: layer.config.digest
+          }
         }
-      });
+      );
+
+      throwIfNot2xx(resp);
     }
   }
 
@@ -32,13 +37,25 @@ export class LayersCacheClient {
   }
 
   private async getBlob(digest: string): Promise<Buffer> {
-    return await request({
-      uri: `${this.hostname}/get-layer`,
-      method: "GET",
-      encoding: null,
+    const resp = await needle("get", `${this.hostname}/get-layer`, {
       headers: {
         digest
       }
     });
+
+    throwIfNot2xx(resp);
+
+    return resp.body;
   }
+}
+
+function throwIfNot2xx(resp: NeedleResponse): void {
+  if (resp.statusCode >= 200 && resp.statusCode <= 299) {
+    return;
+  }
+
+  let err: any = new Error(`http request failed: ${resp.statusCode}`);
+  err.statusCode = resp.statusCode;
+  err.error = resp.body;
+  throw err;
 }
