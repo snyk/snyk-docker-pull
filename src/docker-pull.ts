@@ -8,6 +8,7 @@ import * as subProcess from "./sub-process";
 
 export interface DockerPullResult {
   imageDigest: string;
+  stagingDir: tmp.DirResult | null;
   /** @deprecated caching is no longer used */
   cachedLayersDigests: string[];
   missingLayersDigests: string[];
@@ -49,7 +50,6 @@ export class DockerPull {
   }
 
   public async pull(
-    // TODO (leon): refactor
     username: string,
     password: string,
     registryBase: string,
@@ -57,7 +57,8 @@ export class DockerPull {
     tag: string,
     // weak typing on the client
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    reqOptions = {} as any
+    reqOptions = {} as any,
+    loadImage = true
   ): Promise<DockerPullResult> {
     const manifest: types.ImageManifest = await registryClient.getManifest(
       registryBase,
@@ -91,25 +92,30 @@ export class DockerPull {
 
     let imageDigest: string;
     const stagingDir: tmp.DirResult = tmp.dirSync({ unsafeCleanup: true });
+
     try {
-      imageDigest = await this.loadImage(
+      await this.buildImage(
         imageConfigMetadata.digest,
         imageConfig,
         layersConfigs,
         missingLayers,
-        registryBase,
-        repo,
-        tag,
         stagingDir
       );
+
+      if (loadImage) {
+        imageDigest = await this.loadImage(registryBase, repo, tag, stagingDir);
+      }
     } catch (err) {
       throw new Error(err.stderr);
     } finally {
-      stagingDir.removeCallback();
+      if (loadImage) {
+        stagingDir.removeCallback();
+      }
     }
 
     return {
       imageDigest,
+      stagingDir: loadImage ? null : stagingDir,
       cachedLayersDigests: [],
       missingLayersDigests: missingLayers.map(layer => layer.config.digest),
       pullDuration
@@ -141,15 +147,11 @@ export class DockerPull {
     );
   }
 
-  private async loadImage(
-    // TODO (leon): refactor
+  private async buildImage(
     imageDigest: string,
     imageConfig: object,
     layersConfigs: types.LayerConfig[],
     layers: Layer[],
-    registryBase: string,
-    repo: string,
-    tag: string,
     stagingDir: tmp.DirResult
   ): Promise<string> {
     const imgDir = path.join(stagingDir.name, "image");
@@ -219,6 +221,15 @@ export class DockerPull {
       stagingDir.name
     );
 
+    return path.join(stagingDir.name, "image.tar");
+  }
+
+  private async loadImage(
+    registryBase: string,
+    repo: string,
+    tag: string,
+    stagingDir: tmp.DirResult
+  ): Promise<string> {
     const dockerBinary: string = await DockerPull.findDockerBinary();
     const stdout = (
       await subProcess.execute(
