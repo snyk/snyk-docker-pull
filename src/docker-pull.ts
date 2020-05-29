@@ -217,7 +217,7 @@ export class DockerPull {
 
     await subProcess.execute(
       "tar",
-      ["cf", "image.tar", "-C", imgDir, "."],
+      ["cf", "image.tar", "--xform", "s:\\./\\?::", "-C", imgDir, "."],
       stagingDir.name
     );
 
