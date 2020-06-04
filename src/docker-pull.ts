@@ -15,6 +15,18 @@ export interface DockerPullResult {
   pullDuration: number;
 }
 
+export interface DockerPullOptions {
+  username?: string;
+  password?: string;
+  // weak typing on the client
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  reqOptions?: any;
+  /**
+   * loadImage will default to true if no value is sent
+   */
+  loadImage?: boolean;
+}
+
 const DEFAULT_LAYER_JSON = {
   created: "0001-01-01T00:00:00Z",
   // eslint-disable-next-line @typescript-eslint/camelcase
@@ -50,23 +62,19 @@ export class DockerPull {
   }
 
   public async pull(
-    username: string,
-    password: string,
     registryBase: string,
     repo: string,
     tag: string,
-    // weak typing on the client
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    reqOptions = {} as any,
-    loadImage = true
+    opt?: DockerPullOptions
   ): Promise<DockerPullResult> {
+    const loadImage = opt?.loadImage === undefined ? true : opt.loadImage;
     const manifest: types.ImageManifest = await registryClient.getManifest(
       registryBase,
       repo,
       tag,
-      username,
-      password,
-      reqOptions
+      opt?.username,
+      opt?.password,
+      opt?.reqOptions
     );
 
     const imageConfigMetadata: types.LayerConfig = manifest.config;
@@ -74,19 +82,19 @@ export class DockerPull {
       registryBase,
       repo,
       imageConfigMetadata.digest,
-      username,
-      password,
-      reqOptions
+      opt?.username,
+      opt?.password,
+      opt?.reqOptions
     );
     const t0 = Date.now();
     const layersConfigs: types.LayerConfig[] = manifest.layers;
     const missingLayers = await this.getLayers(
       layersConfigs,
       registryBase,
-      username,
-      password,
       repo,
-      reqOptions
+      opt?.username,
+      opt?.password,
+      opt?.reqOptions
     );
     const pullDuration = Date.now() - t0;
 
@@ -125,9 +133,9 @@ export class DockerPull {
   private async getLayers(
     layersConfigs: types.LayerConfig[],
     registryBase,
-    username,
-    password,
     repo: string,
+    username?: string,
+    password?: string,
     // weak typing on the client
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     reqOptions = {} as any
