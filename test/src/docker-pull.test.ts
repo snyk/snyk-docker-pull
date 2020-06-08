@@ -40,3 +40,20 @@ test("private image pull and build", async () => {
 
   stagingDir.removeCallback();
 });
+
+test("pull from public repo", async () => {
+  const registry = "registry-1.docker.io";
+  const repo = "library/hello-world";
+  const tag = "latest";
+  const opt: DockerPullOptions = {
+    loadImage: false
+  };
+
+  const dockerPull: DockerPull = new DockerPull();
+  const resp = await dockerPull.pull(registry, repo, tag, opt);
+  expect(
+    fs.existsSync(path.join(resp.stagingDir.name, "image.tar"))
+  ).toBeTruthy();
+
+  resp.stagingDir.removeCallback();
+});
