@@ -1,5 +1,5 @@
 import { DockerPull, DockerPullOptions } from "../../src/docker-pull";
-import { removeImage } from "../utils";
+import { removeImage, listTar } from "../utils";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -36,7 +36,8 @@ test("private image pull and build", async () => {
     await dockerPull.pull("registry-1.docker.io", repo, "alpine", opt)
   ).stagingDir;
 
-  expect(fs.existsSync(path.join(stagingDir.name, "image.tar"))).toBeTruthy();
+  const tarPath = path.join(stagingDir.name, "image.tar");
+  expect(fs.existsSync(tarPath)).toBeTruthy();
 
   stagingDir.removeCallback();
 });
@@ -51,9 +52,14 @@ test("pull from public repo", async () => {
 
   const dockerPull: DockerPull = new DockerPull();
   const resp = await dockerPull.pull(registry, repo, tag, opt);
-  expect(
-    fs.existsSync(path.join(resp.stagingDir.name, "image.tar"))
-  ).toBeTruthy();
+
+  const tarPath = path.join(resp.stagingDir.name, "image.tar");
+  expect(fs.existsSync(tarPath)).toBeTruthy();
+
+  const tarListing = await listTar(tarPath);
+  expect(tarListing.includes("manifest.json")).toBeTruthy();
+  expect(tarListing.includes("./manifest.json")).toBeFalsy();
+  tarListing.forEach(fileName => expect(fileName).not.toContain("./"));
 
   resp.stagingDir.removeCallback();
 });

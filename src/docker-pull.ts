@@ -3,8 +3,9 @@ import * as registryClient from "@snyk/docker-registry-v2-client";
 import * as fs from "fs";
 import * as path from "path";
 import * as tmp from "tmp";
-import { Layer, promiseWrite } from "./common";
+import { Layer } from "./common";
 import * as subProcess from "./sub-process";
+import * as tar from "tar-stream";
 
 export interface DockerPullResult {
   imageDigest: string;
@@ -162,19 +163,12 @@ export class DockerPull {
     layers: Layer[],
     stagingDir: tmp.DirResult
   ): Promise<string> {
-    const imgDir = path.join(stagingDir.name, "image");
-    fs.mkdirSync(imgDir);
+    const pack = tar.pack();
 
     // write layers
     let parentDigest: string | undefined;
     for (const layerConfig of layersConfigs) {
       const digest = layerConfig.digest.replace("sha256:", "");
-      const layerDir = path.join(imgDir, digest);
-      // layer might already exist
-      if (fs.existsSync(layerDir)) {
-        continue;
-      }
-      fs.mkdirSync(layerDir);
 
       // write layer.tar
       let blob: Buffer;
@@ -187,26 +181,23 @@ export class DockerPull {
       if (!blob) {
         throw new Error(`missing blob during build: ${digest}`);
       }
-      await promiseWrite(path.join(layerDir, "layer.tar"), blob);
+      pack.entry({ name: path.join(digest, "layer.tar") }, blob);
 
       // write json
       let json: object = Object.assign({}, { id: digest }, DEFAULT_LAYER_JSON);
       if (parentDigest) {
         json = Object.assign({ parent: parentDigest });
       }
-      fs.writeFileSync(path.join(layerDir, "json"), JSON.stringify(json));
+      pack.entry({ name: path.join(digest, "json") }, JSON.stringify(json));
       parentDigest = digest;
 
       // write version
-      fs.writeFileSync(path.join(layerDir, "VERSION"), "1.0");
+      pack.entry({ name: path.join(digest, "VERSION") }, "1.0");
     }
 
     imageDigest = imageDigest.replace("sha256:", "");
     // write image json
-    fs.writeFileSync(
-      `${path.join(imgDir, imageDigest)}.json`,
-      JSON.stringify(imageConfig)
-    );
+    pack.entry({ name: `${imageDigest}.json` }, JSON.stringify(imageConfig));
 
     // write manifest.json
     const manifestJson = [
@@ -218,18 +209,15 @@ export class DockerPull {
         )
       }
     ];
-    fs.writeFileSync(
-      path.join(imgDir, "manifest.json"),
-      JSON.stringify(manifestJson)
-    );
+    pack.entry({ name: "manifest.json" }, JSON.stringify(manifestJson), () => {
+      pack.finalize();
+    });
 
-    await subProcess.execute(
-      "tar",
-      ["cf", "image.tar", "--xform", "s:\\./\\?::", "-C", imgDir, "."],
-      stagingDir.name
-    );
+    const imagePath = path.join(stagingDir.name, "image.tar");
+    const file = fs.createWriteStream(imagePath);
+    pack.pipe(file);
 
-    return path.join(stagingDir.name, "image.tar");
+    return path.join(imagePath);
   }
 
   private async loadImage(
