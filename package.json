@@ -23,6 +23,7 @@
   "devDependencies": {
     "@types/jest": "^25.1.1",
     "@types/node": "^10.17.14",
+    "@types/tar-stream": "^2.1.0",
     "@types/tmp": "^0.1.0",
     "@typescript-eslint/eslint-plugin": "^2.19.0",
     "@typescript-eslint/parser": "^2.19.0",
@@ -36,8 +37,9 @@
     "typescript": "^3.7.5"
   },
   "dependencies": {
-    "@snyk/docker-registry-v2-client": "^1.13.2",
+    "@snyk/docker-registry-v2-client": "^1.13.3",
     "child-process": "^1.0.2",
+    "tar-stream": "^2.1.2",
     "tmp": "^0.1.0"
   }
 }
