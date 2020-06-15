@@ -17,9 +17,6 @@
   },
   "author": "snyk.io",
   "license": "Apache-2.0",
-  "publishConfig": {
-    "access": "restricted"
-  },
   "devDependencies": {
     "@types/jest": "^25.1.1",
     "@types/node": "^10.17.14",
@@ -37,7 +34,7 @@
     "typescript": "^3.7.5"
   },
   "dependencies": {
-    "@snyk/docker-registry-v2-client": "^1.13.3",
+    "@snyk/docker-registry-v2-client": "^1.13.4",
     "child-process": "^1.0.2",
     "tar-stream": "^2.1.2",
     "tmp": "^0.1.0"
