@@ -9,7 +9,8 @@
     "test": "jest --verbose --runInBand",
     "lint": "prettier --check '**/*.ts' && eslint 'src/**/*.ts' && (cd test && eslint '**/*.ts')",
     "format": "prettier --loglevel warn --write '**/*.ts'",
-    "prepare": "npm run build"
+    "prepare": "npm run snyk-protect && npm run build",
+    "snyk-protect": "snyk protect"
   },
   "repository": {
     "type": "git",
@@ -37,6 +38,8 @@
     "@snyk/docker-registry-v2-client": "^1.13.4",
     "child-process": "^1.0.2",
     "tar-stream": "^2.1.2",
-    "tmp": "^0.1.0"
-  }
+    "tmp": "^0.1.0",
+    "snyk": "^1.341.1"
+  },
+  "snyk": true
 }
