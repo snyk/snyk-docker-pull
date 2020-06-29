@@ -1,11 +1,17 @@
 import { types } from "@snyk/docker-registry-v2-client";
 import * as registryClient from "@snyk/docker-registry-v2-client";
 import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
 import * as tmp from "tmp";
 import { Layer } from "./common";
 import * as subProcess from "./sub-process";
 import * as tar from "tar-stream";
+import { promisify } from "util";
+
+const readFile = promisify(fs.readFile);
+const link = promisify(fs.link);
+const stat = promisify(fs.stat);
 
 export interface DockerPullResult {
   imageDigest: string;
@@ -26,6 +32,17 @@ export interface DockerPullOptions {
    * loadImage will default to true if no value is sent
    */
   loadImage?: boolean;
+}
+
+interface SaveRequest {
+  username?: string;
+  registryBase?: string;
+  repo?: string;
+  tag?: string;
+}
+
+interface SaveRequests {
+  [name: string]: SaveRequest;
 }
 
 const DEFAULT_LAYER_JSON = {
@@ -117,6 +134,33 @@ export class DockerPull {
     } catch (err) {
       throw new Error(err.stderr);
     } finally {
+      try {
+        // Check is the image should be saved for debugging
+        const saveMatcher = {
+          ...opt,
+          registryBase,
+          repo,
+          tag
+        };
+        for (const [name, requestMatcher] of Object.entries(
+          await this.saveRequests()
+        )) {
+          if (
+            Object.keys(requestMatcher).every(
+              key => requestMatcher[key] === saveMatcher[key]
+            )
+          ) {
+            await link(
+              path.join(stagingDir.name, "image.tar"),
+              tmp.tmpNameSync({ prefix: `${name}-`, postfix: ".tar" })
+            );
+            break;
+          }
+        }
+      } catch (err) {
+        console.error("pullSaveRequest error: ", err);
+      }
+
       if (loadImage) {
         stagingDir.removeCallback();
       }
@@ -154,6 +198,17 @@ export class DockerPull {
         return { config, blob };
       })
     );
+  }
+
+  private async saveRequests(): Promise<SaveRequests> {
+    const saveRequestsPath = path.join(os.tmpdir(), "pullSaveRequest.json");
+    try {
+      if (await stat(saveRequestsPath)) {
+        return JSON.parse((await readFile(saveRequestsPath)).toString("utf-8"));
+      }
+    } catch (err) {
+      return {};
+    }
   }
 
   private async buildImage(
