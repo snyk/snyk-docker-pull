@@ -35,7 +35,7 @@
     "typescript": "^3.7.5"
   },
   "dependencies": {
-    "@snyk/docker-registry-v2-client": "^1.13.4",
+    "@snyk/docker-registry-v2-client": "^1.13.5",
     "child-process": "^1.0.2",
     "tar-stream": "^2.1.2",
     "tmp": "^0.1.0"
