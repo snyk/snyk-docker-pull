@@ -1,1 +1,2 @@
-export { DockerPull, DockerPullOptions, DockerPullResult } from "./docker-pull";
+export { DockerPull } from "./docker-pull";
+export { DockerPullOptions, DockerPullResult } from "./types";

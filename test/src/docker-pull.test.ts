@@ -1,9 +1,11 @@
-import { DockerPull, DockerPullOptions } from "../../src/docker-pull";
-import { removeImage, listTar } from "../utils";
 import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
 import * as glob from "glob";
+
+import { DockerPull } from "../../src/docker-pull";
+import { DockerPullOptions } from "../../src/types";
+import { removeImage, listTar } from "../utils";
 
 jest.setTimeout(40000);
 
