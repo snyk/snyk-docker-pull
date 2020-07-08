@@ -1,8 +1,11 @@
-import * as tmp from "tmp";
+export interface DirResult {
+  name: string;
+  removeCallback: () => void;
+}
 
 export interface DockerPullResult {
   imageDigest: string;
-  stagingDir: tmp.DirResult | null;
+  stagingDir: DirResult | null;
   /** @deprecated caching is no longer used */
   cachedLayersDigests: string[];
   missingLayersDigests: string[];
@@ -19,6 +22,7 @@ export interface DockerPullOptions {
    * loadImage will default to true if no value is sent
    */
   loadImage?: boolean;
+  imageSavePath?: string;
 }
 
 export interface SaveRequests {
