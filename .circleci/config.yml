@@ -3,7 +3,7 @@ version: 2.1
 defaults: &defaults
   resource_class: small
   docker:
-    - image: node:10
+    - image: circleci/node:8
   working_directory: ~/snyk-docker-pull
 
 commands:
@@ -60,8 +60,6 @@ jobs:
           command: npm run lint
   test:
     <<: *defaults
-    docker:
-      - image: circleci/node:10
     steps:
       - checkout
       - setup_remote_docker
@@ -85,8 +83,6 @@ jobs:
           command: npm run build
   release:
     <<: *defaults
-    docker:
-      - image: node:10
     steps:
       - checkout_and_merge
       - run:
