@@ -9,41 +9,16 @@ import * as subProcess from "./sub-process";
 import * as tar from "tar-stream";
 import { promisify } from "util";
 
+import {
+  DockerPullOptions,
+  DockerPullResult,
+  SaveRequests,
+  DirResult
+} from "./types";
+
 const readFile = promisify(fs.readFile);
 const link = promisify(fs.link);
 const stat = promisify(fs.stat);
-
-export interface DockerPullResult {
-  imageDigest: string;
-  stagingDir: tmp.DirResult | null;
-  /** @deprecated caching is no longer used */
-  cachedLayersDigests: string[];
-  missingLayersDigests: string[];
-  pullDuration: number;
-}
-
-export interface DockerPullOptions {
-  username?: string;
-  password?: string;
-  // weak typing on the client
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  reqOptions?: any;
-  /**
-   * loadImage will default to true if no value is sent
-   */
-  loadImage?: boolean;
-}
-
-interface SaveRequest {
-  username?: string;
-  registryBase?: string;
-  repo?: string;
-  tag?: string;
-}
-
-interface SaveRequests {
-  [name: string]: SaveRequest;
-}
 
 const DEFAULT_LAYER_JSON = {
   created: "0001-01-01T00:00:00Z",
@@ -117,7 +92,9 @@ export class DockerPull {
     const pullDuration = Date.now() - t0;
 
     let imageDigest: string;
-    const stagingDir: tmp.DirResult = tmp.dirSync({ unsafeCleanup: true });
+    const stagingDir: DirResult = this.createDownloadedImageDestination(
+      opt?.imageSavePath
+    );
 
     try {
       await this.buildImage(
@@ -216,7 +193,7 @@ export class DockerPull {
     imageConfig: object,
     layersConfigs: types.LayerConfig[],
     layers: Layer[],
-    stagingDir: tmp.DirResult
+    stagingDir: DirResult
   ): Promise<string> {
     const pack = tar.pack();
 
@@ -279,7 +256,7 @@ export class DockerPull {
     registryBase: string,
     repo: string,
     tag: string,
-    stagingDir: tmp.DirResult
+    stagingDir: DirResult
   ): Promise<string> {
     const dockerBinary: string = await DockerPull.findDockerBinary();
     const stdout = (
@@ -298,5 +275,20 @@ export class DockerPull {
     ]);
 
     return imgDigest;
+  }
+
+  private createDownloadedImageDestination(imageSavePath?: string): DirResult {
+    if (!imageSavePath) {
+      return tmp.dirSync({ unsafeCleanup: true });
+    }
+
+    const dirResult: DirResult = {
+      name: imageSavePath,
+      removeCallback: () => {
+        /* do nothing */
+      }
+    };
+
+    return dirResult;
   }
 }

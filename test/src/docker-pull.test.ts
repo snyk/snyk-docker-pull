@@ -1,9 +1,22 @@
-import { DockerPull, DockerPullOptions } from "../../src/docker-pull";
-import { removeImage, listTar } from "../utils";
 import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
 import * as glob from "glob";
+import * as fx from "mkdir-recursive";
+
+import { DockerPull } from "../../src/docker-pull";
+import { DockerPullOptions } from "../../src/types";
+import { removeImage, listTar } from "../utils";
+
+function rmdirRecursive(customPath: string[]): void {
+  if (customPath.length < 2) {
+    return;
+  }
+
+  fs.rmdirSync(path.join(...customPath));
+  const next = customPath.slice(0, customPath.length - 1);
+  rmdirRecursive(next);
+}
 
 jest.setTimeout(40000);
 
@@ -82,13 +95,17 @@ test("pull from public repo", async () => {
   const repo = "library/hello-world";
   const tag = "latest";
   const opt: DockerPullOptions = {
-    loadImage: false
+    loadImage: false,
+    imageSavePath: "./custom/image/save/path"
   };
+  // the custom path won't be create by the lib
+  fx.mkdirSync(opt.imageSavePath);
 
   const dockerPull: DockerPull = new DockerPull();
   const resp = await dockerPull.pull(registry, repo, tag, opt);
 
   const tarPath = path.join(resp.stagingDir.name, "image.tar");
+  expect(tarPath).toBe(path.join(resp.stagingDir.name, "image.tar"));
   expect(fs.existsSync(tarPath)).toBeTruthy();
 
   const tarListing = await listTar(tarPath);
@@ -96,5 +113,9 @@ test("pull from public repo", async () => {
   expect(tarListing.includes("./manifest.json")).toBeFalsy();
   tarListing.forEach(fileName => expect(fileName).not.toContain("./"));
 
+  // it won't do nothing because we set imageSavePath
   resp.stagingDir.removeCallback();
+  // clean up
+  fs.unlinkSync(tarPath);
+  rmdirRecursive(opt.imageSavePath.split(path.sep));
 });
