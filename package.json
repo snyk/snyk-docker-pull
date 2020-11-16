@@ -39,7 +39,7 @@
     "mkdir-recursive": "^0.4.0"
   },
   "dependencies": {
-    "@snyk/docker-registry-v2-client": "^1.13.5",
+    "@snyk/docker-registry-v2-client": "1.13.7",
     "child-process": "^1.0.2",
     "tar-stream": "^2.1.2",
     "tmp": "^0.1.0"
