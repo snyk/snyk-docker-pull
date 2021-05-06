@@ -32,14 +32,14 @@
     "eslint-plugin-jest": "^23.6.0",
     "glob": "^7.1.6",
     "jest": "^25.1.0",
+    "mkdir-recursive": "^0.4.0",
     "prettier": "^1.19.1",
     "ts-jest": "^25.2.0",
     "ts-node": "^8.6.2",
-    "typescript": "^3.7.5",
-    "mkdir-recursive": "^0.4.0"
+    "typescript": "^3.7.5"
   },
   "dependencies": {
-    "@snyk/docker-registry-v2-client": "1.13.9",
+    "@snyk/docker-registry-v2-client": "^2.1.1",
     "child-process": "^1.0.2",
     "tar-stream": "^2.1.2",
     "tmp": "^0.1.0"
