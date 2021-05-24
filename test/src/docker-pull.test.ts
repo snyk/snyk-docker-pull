@@ -90,6 +90,50 @@ test("private image pull and build", async () => {
   fs.unlinkSync(pullSaveRequestPath);
 });
 
+test.only("private multiarch manifest digest pull and build", async () => {
+  const repo = `${process.env.SNYK_DRA_DOCKER_HUB_REPOSITORY}-multiarch`;
+  const multiArchManifestDigestWithAmd64 =
+    "sha256:5e2cb9c57eaef5ab6c99e7f7620ebf3c1c580928cf450e155e1b6306c6dd1939";
+
+  const opt: DockerPullOptions = {
+    username: process.env.SNYK_DRA_DOCKER_HUB_USERNAME,
+    password: process.env.SNYK_DRA_DOCKER_HUB_PASSWORD,
+    loadImage: false
+  };
+
+  // Add pull save request
+  const pullSaveRequestPath = path.join(os.tmpdir(), "pullSaveRequest.json");
+  fs.writeFileSync(
+    pullSaveRequestPath,
+    `{
+  "foo" : {
+    "username" : "${process.env.SNYK_DRA_DOCKER_HUB_USERNAME}",
+    "repo" : "${repo}",
+    "tag" : "${multiArchManifestDigestWithAmd64}"
+  }
+}`
+  );
+
+  const dockerPull: DockerPull = new DockerPull();
+  const stagingDir = (
+    await dockerPull.pull(
+      "registry-1.docker.io",
+      repo,
+      multiArchManifestDigestWithAmd64,
+      opt
+    )
+  ).stagingDir;
+
+  const containerArchives = glob.sync(path.join(os.tmpdir(), "foo-*.tar"));
+  expect(containerArchives.length).toBeGreaterThan(0);
+
+  const tarPath = path.join(stagingDir.name, "image.tar");
+  expect(fs.existsSync(tarPath)).toBeTruthy();
+
+  stagingDir.removeCallback();
+  fs.unlinkSync(pullSaveRequestPath);
+});
+
 test("pull from public repo", async () => {
   const registry = "registry-1.docker.io";
   const repo = "library/hello-world";
