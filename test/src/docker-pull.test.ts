@@ -90,7 +90,7 @@ test("private image pull and build", async () => {
   fs.unlinkSync(pullSaveRequestPath);
 });
 
-test.only("private multiarch manifest digest pull and build", async () => {
+test("private multiarch manifest digest pull and build", async () => {
   const repo = `${process.env.SNYK_DRA_DOCKER_HUB_REPOSITORY}-multiarch`;
   const multiArchManifestDigestWithAmd64 =
     "sha256:5e2cb9c57eaef5ab6c99e7f7620ebf3c1c580928cf450e155e1b6306c6dd1939";
