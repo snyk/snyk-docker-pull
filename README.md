@@ -6,7 +6,7 @@ TODO interface documentation
 
 ### Tests
 
-Set up your local env with the following env vars (see 1Password):
+Set up your local env with the following env vars (see 1Password `DRA env`):
 ```
 export SNYK_DRA_AZURE_USERNAME=snykgoof
 export SNYK_DRA_AZURE_PASSWORD=<See 1password: Development/Azure Container Registry (ACR) - Docker Registry Agent>
