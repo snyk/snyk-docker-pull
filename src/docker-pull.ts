@@ -1,5 +1,6 @@
 import { types } from "@snyk/docker-registry-v2-client";
 import * as registryClient from "@snyk/docker-registry-v2-client";
+import * as crypto from "crypto";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
@@ -148,7 +149,10 @@ export class DockerPull {
       stagingDir: loadImage ? null : stagingDir,
       cachedLayersDigests: [],
       missingLayersDigests: missingLayers.map(layer => layer.config.digest),
-      pullDuration
+      pullDuration,
+      missingLayersCalculatedDigests: opt.calculateMissingLayersDigests
+        ? missingLayers.map(layer => this.calculateLayerDigest(layer))
+        : []
     };
   }
 
@@ -175,6 +179,16 @@ export class DockerPull {
         return { config, blob };
       })
     );
+  }
+
+  private calculateLayerDigest(layer: Layer): string {
+    const hashAlgorithm = layer.config.digest.split(":")[0];
+    const calculatedDigest = crypto
+      .createHash(hashAlgorithm)
+      .update(layer.blob)
+      .digest("hex");
+
+    return `${hashAlgorithm}:${calculatedDigest}`;
   }
 
   private async saveRequests(): Promise<SaveRequests> {

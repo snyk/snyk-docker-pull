@@ -8,8 +8,12 @@ export interface DockerPullResult {
   stagingDir: DirResult | null;
   /** @deprecated caching is no longer used */
   cachedLayersDigests: string[];
+  // The digests of the missing layers as returned in the manifest
   missingLayersDigests: string[];
   pullDuration: number;
+  // Experimental: The digests calculated from the missing layers downloaded blobs.
+  // Added as an experimental tool, and may be removed in future versions.
+  missingLayersCalculatedDigests: string[];
 }
 
 export interface DockerPullOptions {
@@ -23,6 +27,10 @@ export interface DockerPullOptions {
    */
   loadImage?: boolean;
   imageSavePath?: string;
+  // Experimental. If set to true, calculate and return missing
+  // layers digests from downloaded blobs.
+  // Added as an experimental tool, and may be removed in future versions.
+  calculateMissingLayersDigests?: boolean;
 }
 
 export interface SaveRequests {
