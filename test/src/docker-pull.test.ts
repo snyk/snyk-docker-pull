@@ -163,3 +163,38 @@ test("pull from public repo", async () => {
   fs.unlinkSync(tarPath);
   rmdirRecursive(opt.imageSavePath.split(path.sep));
 });
+
+describe("calculate missing layers digest", () => {
+  test("when set to true - should return calculated digests", async () => {
+    const registry = "registry-1.docker.io";
+    const repo = "library/hello-world";
+    const tag = "latest";
+    const opt: DockerPullOptions = {
+      loadImage: false,
+      calculateMissingLayersDigests: true
+    };
+    const dockerPull: DockerPull = new DockerPull();
+    const resp = await dockerPull.pull(registry, repo, tag, opt);
+    expect(resp.missingLayersCalculatedDigests).toEqual(
+      resp.missingLayersDigests
+    );
+
+    resp.stagingDir.removeCallback();
+  });
+
+  test("when set to false - should not return calculated digests", async () => {
+    const registry = "registry-1.docker.io";
+    const repo = "library/hello-world";
+    const tag = "latest";
+    const opt: DockerPullOptions = {
+      loadImage: false,
+      calculateMissingLayersDigests: false
+    };
+
+    const dockerPull: DockerPull = new DockerPull();
+    const resp = await dockerPull.pull(registry, repo, tag, opt);
+    expect(resp.missingLayersCalculatedDigests).toEqual([]);
+
+    resp.stagingDir.removeCallback();
+  });
+});
