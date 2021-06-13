@@ -16,6 +16,7 @@ import {
   SaveRequests,
   DirResult
 } from "./types";
+import { InvalidManifestSchemaVersionError } from "./errors";
 
 const readFile = promisify(fs.readFile);
 const link = promisify(fs.link);
@@ -70,6 +71,10 @@ export class DockerPull {
       opt?.password,
       opt?.reqOptions
     );
+
+    if (manifest.schemaVersion !== 2) {
+      throw new InvalidManifestSchemaVersionError(manifest.schemaVersion);
+    }
 
     const imageConfigMetadata: types.LayerConfig = manifest.config;
     const imageConfig = await registryClient.getImageConfig(
