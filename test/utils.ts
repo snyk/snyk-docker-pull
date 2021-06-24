@@ -28,8 +28,10 @@ export async function listTar(tarFilePath): Promise<string[]> {
   await new Promise((resolve, reject) => {
     tarExtractor.on("entry", async (header, stream, next) => {
       tarFileNames.push(header.name);
+      stream.on("end", () => {
+        next(); // ready for next entry
+      });
       stream.resume(); // auto drain the stream
-      next(); // ready for next entry
     });
 
     tarExtractor.on("finish", resolve);
