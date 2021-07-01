@@ -268,7 +268,11 @@ export class DockerPull {
     const file = fs.createWriteStream(imagePath);
     pack.pipe(file);
 
-    return path.join(imagePath);
+    return new Promise(resolve => {
+      file.on("close", () => {
+        resolve(path.join(imagePath));
+      });
+    });
   }
 
   private async loadImage(
