@@ -3,7 +3,7 @@ version: 2.1
 defaults: &defaults
   resource_class: small
   docker:
-    - image: circleci/node:10
+    - image: circleci/node:14
   working_directory: ~/snyk-docker-pull
 
 commands:
@@ -83,8 +83,6 @@ jobs:
           command: npm run build
   release:
     <<: *defaults
-    docker:
-      - image: node:10
     steps:
       - checkout_and_merge
       - run:
