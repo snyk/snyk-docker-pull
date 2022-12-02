@@ -35,7 +35,7 @@ export async function listTar(tarFilePath): Promise<string[]> {
     });
 
     tarExtractor.on("finish", resolve);
-    tarExtractor.on("error", error => reject(error));
+    tarExtractor.on("error", (error) => reject(error));
 
     createReadStream(tarFilePath).pipe(tarExtractor);
   });

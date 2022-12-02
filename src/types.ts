@@ -14,6 +14,8 @@ export interface DockerPullResult {
   // Experimental: The digests calculated from the missing layers downloaded blobs.
   // Added as an experimental tool, and may be removed in future versions.
   missingLayersCalculatedDigests: string[];
+  indexDigest?: string;
+  manifestDigest?: string;
 }
 
 export interface DockerPullOptions {

@@ -14,7 +14,7 @@ import {
   DockerPullOptions,
   DockerPullResult,
   SaveRequests,
-  DirResult
+  DirResult,
 } from "./types";
 import { InvalidManifestSchemaVersionError } from "./errors";
 
@@ -24,7 +24,6 @@ const stat = promisify(fs.stat);
 
 const DEFAULT_LAYER_JSON = {
   created: "0001-01-01T00:00:00Z",
-  // eslint-disable-next-line @typescript-eslint/camelcase
   container_config: {
     Hostname: "",
     Domainname: "",
@@ -42,16 +41,16 @@ const DEFAULT_LAYER_JSON = {
     WorkingDir: "",
     Entrypoint: null,
     OnBuild: null,
-    Labels: null
-  }
+    Labels: null,
+  },
 };
 
 export class DockerPull {
   private static async findDockerBinary(): Promise<string> {
     return subProcess
       .execute("which", ["docker"], undefined, undefined, true)
-      .then(cmdOutput => cmdOutput.stdout.trim())
-      .catch(cmdOutput => {
+      .then((cmdOutput) => cmdOutput.stdout.trim())
+      .catch((cmdOutput) => {
         throw new Error(cmdOutput.stderr);
       });
   }
@@ -71,6 +70,9 @@ export class DockerPull {
       opt?.password,
       opt?.reqOptions
     );
+
+    const indexDigest = manifest.indexDigest ?? undefined;
+    const manifestDigest = manifest.manifestDigest ?? undefined;
 
     if (manifest.schemaVersion !== 2) {
       throw new InvalidManifestSchemaVersionError(manifest.schemaVersion);
@@ -123,14 +125,14 @@ export class DockerPull {
           ...opt,
           registryBase,
           repo,
-          tag
+          tag,
         };
         for (const [name, requestMatcher] of Object.entries(
           await this.saveRequests()
         )) {
           if (
             Object.keys(requestMatcher).every(
-              key => requestMatcher[key] === saveMatcher[key]
+              (key) => requestMatcher[key] === saveMatcher[key]
             )
           ) {
             await link(
@@ -153,11 +155,13 @@ export class DockerPull {
       imageDigest,
       stagingDir: loadImage ? null : stagingDir,
       cachedLayersDigests: [],
-      missingLayersDigests: missingLayers.map(layer => layer.config.digest),
+      missingLayersDigests: missingLayers.map((layer) => layer.config.digest),
       pullDuration,
       missingLayersCalculatedDigests: opt.calculateMissingLayersDigests
-        ? missingLayers.map(layer => this.calculateLayerDigest(layer))
-        : []
+        ? missingLayers.map((layer) => this.calculateLayerDigest(layer))
+        : [],
+      indexDigest,
+      manifestDigest,
     };
   }
 
@@ -209,7 +213,7 @@ export class DockerPull {
 
   private async buildImage(
     imageDigest: string,
-    imageConfig: object,
+    imageConfig: Record<string, unknown>,
     layersConfigs: types.LayerConfig[],
     layers: Layer[],
     stagingDir: DirResult
@@ -235,7 +239,11 @@ export class DockerPull {
       pack.entry({ name: path.join(digest, "layer.tar") }, blob);
 
       // write json
-      let json: object = Object.assign({}, { id: digest }, DEFAULT_LAYER_JSON);
+      let json: Record<string, unknown> = Object.assign(
+        {},
+        { id: digest },
+        DEFAULT_LAYER_JSON
+      );
       if (parentDigest) {
         json = Object.assign({ parent: parentDigest });
       }
@@ -256,9 +264,9 @@ export class DockerPull {
         Config: `${imageDigest}.json`,
         RepoTags: null,
         Layers: layersConfigs.map(
-          config => `${config.digest.replace("sha256:", "")}/layer.tar`
-        )
-      }
+          (config) => `${config.digest.replace("sha256:", "")}/layer.tar`
+        ),
+      },
     ];
     pack.entry({ name: "manifest.json" }, JSON.stringify(manifestJson), () => {
       pack.finalize();
@@ -268,7 +276,7 @@ export class DockerPull {
     const file = fs.createWriteStream(imagePath);
     pack.pipe(file);
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       file.on("close", () => {
         resolve(path.join(imagePath));
       });
@@ -294,7 +302,7 @@ export class DockerPull {
     await subProcess.execute(dockerBinary, [
       "tag",
       `${imgDigest}`,
-      `${registryBase}/${repo}:${tag}`
+      `${registryBase}/${repo}:${tag}`,
     ]);
 
     return imgDigest;
@@ -309,7 +317,7 @@ export class DockerPull {
       name: imageSavePath,
       removeCallback: () => {
         /* do nothing */
-      }
+      },
     };
 
     return dirResult;
