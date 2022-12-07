@@ -26,14 +26,14 @@ export async function execute(
     let stderr = "";
 
     const proc = childProcess.spawn(command, args, spawnOptions);
-    proc.stdout.on("data", data => {
+    proc.stdout.on("data", (data) => {
       stdout = stdout + data;
     });
-    proc.stderr.on("data", data => {
+    proc.stderr.on("data", (data) => {
       stderr = stderr + data;
     });
 
-    proc.on("close", code => {
+    proc.on("close", (code) => {
       const output: CmdOutput = { stdout, stderr };
       if (code !== 0) {
         return reject(output);
