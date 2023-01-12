@@ -17,10 +17,6 @@ export SNYK_DRA_DOCKER_HUB_USERNAME=snykgoof
 export SNYK_DRA_DOCKER_HUB_PASSWORD=<See 1password>
 export SNYK_DRA_DOCKER_HUB_REPOSITORY=snykgoof/dockerhub-goof
 export SNYK_DRA_DOCKER_HUB_REGISTRY_BASE=registry-1.docker.io
-
-export SNYK_DRA_ELASTIC_ACCESS_KEY_ID=AKIAJICAGDWS3GILA5WA
-export SNYK_DRA_ELASTIC_SECRET_ACCESS_KEY=<See 1password: Development/Elastic Container Registry (ECR) - Docker Registry Agent>
-export SNYK_DRA_ELASTIC_REGION=eu-west-3
 ```
 To run the tests:
 
