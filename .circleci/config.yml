@@ -33,8 +33,8 @@ commands:
     steps:
       - checkout
       - run:
-          name: Checkout master
-          command: git checkout origin/master
+          name: Checkout main
+          command: git checkout origin/main
       - run:
           name: Merge test branch
           command: |
@@ -107,7 +107,7 @@ workflows:
           filters:
             branches:
               ignore:
-                - master
+                - main
       - lint:
           name: Lint
           context: nodejs-install
@@ -116,7 +116,7 @@ workflows:
           filters:
             branches:
               ignore:
-                - master
+                - main
       - build:
           name: Build
           requires:
@@ -124,7 +124,7 @@ workflows:
           filters:
             branches:
               ignore:
-                - master
+                - main
       - test:
           name: Test
           context: nodejs-install
@@ -133,13 +133,13 @@ workflows:
           filters:
             branches:
               ignore:
-                - master
+                - main
       - release:
           name: Release to GitHub
           context: nodejs-lib-release
           filters:
             branches:
               only:
-                - master
+                - main
 
 
