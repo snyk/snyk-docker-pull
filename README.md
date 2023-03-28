@@ -16,6 +16,7 @@ export SNYK_DRA_AZURE_REGISTRY_BASE=snykgoof.azurecr.io
 export SNYK_DRA_DOCKER_HUB_USERNAME=snykgoof
 export SNYK_DRA_DOCKER_HUB_PASSWORD=<See 1password>
 export SNYK_DRA_DOCKER_HUB_REPOSITORY=snykgoof/dockerhub-goof
+export SNYK_OCI_MULTI_ARCH_DOCKER_HUB_REPOSITORY=snykgoof/nodejs18
 export SNYK_DRA_DOCKER_HUB_REGISTRY_BASE=registry-1.docker.io
 ```
 To run the tests:

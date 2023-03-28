@@ -1,4 +1,4 @@
-import { types } from "@snyk/docker-registry-v2-client";
+import { contentTypes, types } from "@snyk/docker-registry-v2-client";
 import * as registryClient from "@snyk/docker-registry-v2-client";
 import * as crypto from "crypto";
 import * as fs from "fs";
@@ -105,13 +105,22 @@ export class DockerPull {
     );
 
     try {
-      await this.buildImage(
-        imageConfigMetadata.digest,
-        imageConfig,
-        layersConfigs,
-        missingLayers,
-        stagingDir
-      );
+      if (manifest?.manifestContentType === contentTypes.OCI_MANIFEST_V1) {
+        await this.buildOCIImage(
+          manifest,
+          imageConfig,
+          missingLayers,
+          stagingDir
+        );
+      } else {
+        await this.buildImage(
+          imageConfigMetadata.digest,
+          imageConfig,
+          layersConfigs,
+          missingLayers,
+          stagingDir
+        );
+      }
 
       if (loadImage) {
         imageDigest = await this.loadImage(registryBase, repo, tag, stagingDir);
@@ -209,6 +218,78 @@ export class DockerPull {
     } catch (err) {
       return {};
     }
+  }
+
+  private async buildOCIImage(
+    manifest: types.ImageManifest,
+    imageConfig: Record<string, unknown>,
+    layers: Layer[],
+    stagingDir: DirResult
+  ): Promise<string> {
+    const pack = tar.pack();
+
+    for (const layer of layers) {
+      const digest = layer.config.digest.replace("sha256:", "");
+      pack.entry({ name: path.join("blobs", "sha256", digest) }, layer.blob);
+    }
+
+    const configContent = JSON.stringify(imageConfig);
+    const configDigest = crypto
+      .createHash("sha256")
+      .update(configContent)
+      .digest("hex")
+      .toLowerCase();
+    pack.entry(
+      { name: path.join("blobs", "sha256", configDigest) },
+      configContent
+    );
+
+    // Ensure config digest and size is accurate following serialization round trip
+    manifest.config.digest = `sha256:${configDigest}`;
+    manifest.config.size = Buffer.byteLength(configContent, "utf8");
+
+    // Unset properties added by docker-registry-v2-client
+    manifest.indexDigest = undefined;
+    manifest.manifestDigest = undefined;
+    manifest.manifestContentType = undefined;
+
+    const manifestContent = JSON.stringify(manifest);
+    const manifestDigest = crypto
+      .createHash("sha256")
+      .update(manifestContent)
+      .digest("hex")
+      .toLowerCase();
+    pack.entry(
+      { name: path.join("blobs", "sha256", manifestDigest) },
+      manifestContent
+    );
+
+    const indexContent = JSON.stringify({
+      schemaVersion: 2,
+      mediaType: contentTypes.OCI_INDEX_V1,
+      manifests: [
+        {
+          mediaType: contentTypes.OCI_MANIFEST_V1,
+          size: Buffer.byteLength(manifestContent, "utf8"),
+          digest: `sha256:${manifestDigest}`,
+        },
+      ],
+    });
+    pack.entry({ name: "index.json" }, indexContent);
+
+    const ociLayoutContent = JSON.stringify({ imageLayoutVersion: "1.0.0" });
+    pack.entry({ name: "oci-layout" }, ociLayoutContent, () => {
+      pack.finalize();
+    });
+
+    const imagePath = path.join(stagingDir.name, "image.tar");
+    const file = fs.createWriteStream(imagePath);
+    pack.pipe(file);
+
+    return new Promise((resolve, reject) => {
+      file.on("close", () => resolve(path.join(imagePath)));
+      file.on("error", (err) => reject(err));
+    });
   }
 
   private async buildImage(
