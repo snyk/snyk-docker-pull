@@ -79,8 +79,9 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/snyk-docker-pull
-      - node/install-packages:
-          pkg-manager: npm
+      - node/install:
+          node-version: << parameters.node-version >>
+          override-ci-command: npm install
       - run:
           name: Run tests
           command: npm test
