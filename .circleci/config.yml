@@ -1,10 +1,21 @@
 version: 2.1
 
+orbs:
+  node: circleci/node@4.7
+
 defaults: &defaults
   resource_class: small
   docker:
     - image: cimg/node:18.15.0
   working_directory: ~/snyk-docker-pull
+
+executors:
+  docker: # Docker using the Base Convenience Image
+    docker:
+      - image: cimg/base:stable
+  linux: # a Linux VM running Ubuntu 20.04
+    machine:
+      image: ubuntu-2004:202107-02
 
 commands:
   install_deps:
@@ -59,12 +70,17 @@ jobs:
           name: Run tests
           command: npm run lint
   test:
-    <<: *defaults
+    parameters:
+      node_version:
+        type: string
+    executor:
+      name: linux
     steps:
       - checkout
-      - setup_remote_docker
       - attach_workspace:
           at: ~/snyk-docker-pull
+      - node/install-packages:
+          pkg-manager: npm
       - run:
           name: Run tests
           command: npm test
@@ -126,10 +142,13 @@ workflows:
               ignore:
                 - main
       - test:
-          name: Test
+          name: Test (Linux, Node v<< matrix.node_version >>)
           context: nodejs-install
           requires:
             - Install
+          matrix:
+            parameters:
+              node_version: ['14.21', '16.19', '18.15']
           filters:
             branches:
               ignore:
