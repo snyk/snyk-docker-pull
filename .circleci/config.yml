@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   node: circleci/node@5.1.0
+  prodsec: snyk/prodsec-orb@1.0
 
 defaults: &defaults
   resource_class: small
@@ -118,6 +119,12 @@ workflows:
   version: 2
   test_and_release:
     jobs:
+      - prodsec/secrets-scan:
+          name: Scan repository for secrets
+          context:
+            - snyk-bot-slack
+          channel: container-integration-alerts
+
       - install:
           name: Install
           context: nodejs-install
