@@ -12,8 +12,9 @@ _Instructions on how to run this locally, background context, what to review, qu
 
 ### More information
 
-- [Jira ticket CIT-0000](https://snyksec.atlassian.net/browse/CIT-0000)
-- [Link to documentation](https://github.com/Snyk/registry/wiki/)
+- Jira ticket: https://snyksec.atlassian.net/browse/CIT-0000
+- Slack thread: https://snyk.slack.com/archives
+- Documentation: N/A
 
 ### Screenshots
 
