@@ -3,6 +3,8 @@ version: 2.1
 orbs:
   node: circleci/node@5.1.0
   prodsec: snyk/prodsec-orb@1.0
+  snyk: snyk/snyk@1.7.0
+  slack: circleci/slack@4.12.1
 
 defaults: &defaults
   resource_class: small
@@ -55,6 +57,68 @@ commands:
             git merge --no-edit "$CIRCLE_BRANCH"
       - attach_workspace:
           at: ~/snyk-docker-pull
+  notify_slack_on_failure:
+    steps:
+      - slack/notify:
+          branch_pattern: main
+          channel: container-integration-deployment
+          event: fail
+          mentions: "@team-container-integration"
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "CICD pipeline failed :circleci-fail:",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Project*: ${CIRCLE_PROJECT_REPONAME}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Job*: ${CIRCLE_JOB}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch*: ${CIRCLE_BRANCH}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author*: ${CIRCLE_USERNAME}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Mentions*: ${SLACK_PARAM_MENTIONS}"
+                    }
+                  ],
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "emoji": true,
+                      "text": "View Job"
+                    },
+                    "value": "${CIRCLE_BUILD_URL}"
+                  }
+                }
+              ]
+            }
 
 jobs:
   install:
@@ -70,6 +134,32 @@ jobs:
       - run:
           name: Run tests
           command: npm run lint
+  scan-code:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/snyk-docker-pull
+      - snyk/scan:
+          command: code test
+          fail-on-issues: true
+          severity-threshold: high
+          monitor-on-build: true
+          token-variable: MONITOR_SNYK_TOKEN
+      - notify_slack_on_failure
+  scan-deps:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/snyk-docker-pull
+      - snyk/scan:
+          additional-arguments: --all-projects
+          fail-on-issues: true
+          severity-threshold: high
+          monitor-on-build: true
+          token-variable: MONITOR_SNYK_TOKEN
+      - notify_slack_on_failure
   test:
     parameters:
       node-version:
@@ -157,6 +247,24 @@ workflows:
           matrix:
             parameters:
               node-version: ['14.21', '16.19', '18.15']
+          filters:
+            branches:
+              ignore:
+                - main
+      - scan-code:
+          name: Snyk Code Scan
+          context: team-container-integration-snyk
+          requires:
+            - Install
+          filters:
+            branches:
+              ignore:
+                - main
+      - scan-deps:
+          name: Snyk Open Source Scan
+          context: team-container-integration-snyk
+          requires:
+            - Install
           filters:
             branches:
               ignore:
