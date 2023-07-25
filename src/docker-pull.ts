@@ -107,6 +107,7 @@ export class DockerPull {
     try {
       if (manifest?.manifestContentType === contentTypes.OCI_MANIFEST_V1) {
         await this.buildOCIImage(
+          imageConfigMetadata.digest,
           manifest,
           imageConfig,
           missingLayers,
@@ -221,6 +222,7 @@ export class DockerPull {
   }
 
   private async buildOCIImage(
+    imageDigest: string,
     manifest: types.ImageManifest,
     imageConfig: Record<string, unknown>,
     layers: Layer[],
@@ -234,11 +236,7 @@ export class DockerPull {
     }
 
     const configContent = JSON.stringify(imageConfig);
-    const configDigest = crypto
-      .createHash("sha256")
-      .update(configContent)
-      .digest("hex")
-      .toLowerCase();
+    const configDigest = imageDigest.replace("sha256:", "");
     pack.entry(
       { name: path.join("blobs", "sha256", configDigest) },
       configContent
