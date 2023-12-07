@@ -4,11 +4,11 @@ import * as crypto from "crypto";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import * as tmp from "tmp";
+import * as tar from "tar-stream";
+import { randomUUID } from "crypto";
+import { promisify } from "util";
 import { Layer } from "./common";
 import * as subProcess from "./sub-process";
-import * as tar from "tar-stream";
-import { promisify } from "util";
 
 import {
   DockerPullOptions,
@@ -147,7 +147,7 @@ export class DockerPull {
           ) {
             await link(
               path.join(stagingDir.name, "image.tar"),
-              tmp.tmpNameSync({ prefix: `${name}-`, postfix: ".tar" })
+              path.join(os.tmpdir(), `${name}-${randomUUID()}.tar`)
             );
             break;
           }
@@ -387,14 +387,20 @@ export class DockerPull {
     return imgDigest;
   }
 
-  private createDownloadedImageDestination(imageSavePath?: string): DirResult {
+  private createDownloadedImageDestination(
+    imageSavePath: string | undefined
+  ): DirResult {
     if (!imageSavePath) {
-      return tmp.dirSync({ unsafeCleanup: true });
+      const name = fs.mkdtempSync(os.tmpdir());
+      return {
+        name,
+        removeCallback: (): void => fs.rmSync(name, { recursive: true }),
+      };
     }
 
     const dirResult: DirResult = {
       name: imageSavePath,
-      removeCallback: () => {
+      removeCallback: (): void => {
         /* do nothing */
       },
     };
