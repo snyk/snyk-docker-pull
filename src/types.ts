@@ -33,6 +33,7 @@ export interface DockerPullOptions {
   // layers digests from downloaded blobs.
   // Added as an experimental tool, and may be removed in future versions.
   calculateMissingLayersDigests?: boolean;
+  stagingDirPath?: string;
 }
 
 export interface SaveRequests {

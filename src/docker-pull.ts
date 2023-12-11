@@ -97,10 +97,16 @@ export class DockerPull {
       opt?.password,
       opt?.reqOptions
     );
+
+    const stagingDirPath = opt.stagingDirPath
+      ? opt.stagingDirPath
+      : os.tmpdir();
+
     const pullDuration = Date.now() - t0;
 
     let imageDigest: string;
     const stagingDir: DirResult = this.createDownloadedImageDestination(
+      stagingDirPath,
       opt?.imageSavePath
     );
 
@@ -147,7 +153,7 @@ export class DockerPull {
           ) {
             await link(
               path.join(stagingDir.name, "image.tar"),
-              path.join(os.tmpdir(), `${name}-${randomUUID()}.tar`)
+              path.join(stagingDirPath, `${name}-${randomUUID()}.tar`)
             );
             break;
           }
@@ -388,10 +394,11 @@ export class DockerPull {
   }
 
   private createDownloadedImageDestination(
+    stagingDirPath: string,
     imageSavePath: string | undefined
   ): DirResult {
     if (!imageSavePath) {
-      const name = fs.mkdtempSync(os.tmpdir());
+      const name = fs.mkdtempSync(stagingDirPath + path.sep);
       return {
         name,
         removeCallback: (): void => fs.rmSync(name, { recursive: true }),
