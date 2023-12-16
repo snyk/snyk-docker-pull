@@ -4,7 +4,7 @@ import { promisify } from "util";
 
 export interface Layer {
   config: types.LayerConfig;
-  blob: Buffer;
+  blobName: string;
 }
 
 export const readDir = promisify(fs.readdir);

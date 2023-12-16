@@ -23,7 +23,7 @@
   "devDependencies": {
     "@types/jest": "^26.0.21",
     "@types/node": "^16.11.6",
-    "@types/tar-stream": "^2.2.0",
+    "@types/tar-fs": "^2.0.4",
     "@typescript-eslint/eslint-plugin": "^4.28.5",
     "@typescript-eslint/parser": "^4.28.5",
     "eslint": "^7.22.0",
@@ -38,9 +38,9 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@snyk/docker-registry-v2-client": "^2.9.0",
+    "@snyk/docker-registry-v2-client": "^2.11.0",
     "child-process": "^1.0.2",
-    "tar-stream": "^2.2.0"
+    "tar-fs": "^3.0.4"
   },
   "release": {
     "branches": [
