@@ -11,9 +11,6 @@ export interface DockerPullResult {
   // The digests of the missing layers as returned in the manifest
   missingLayersDigests: string[];
   pullDuration: number;
-  // Experimental: The digests calculated from the missing layers downloaded blobs.
-  // Added as an experimental tool, and may be removed in future versions.
-  missingLayersCalculatedDigests: string[];
   indexDigest?: string;
   manifestDigest?: string;
 }
@@ -29,10 +26,6 @@ export interface DockerPullOptions {
    */
   loadImage?: boolean;
   imageSavePath?: string;
-  // Experimental. If set to true, calculate and return missing
-  // layers digests from downloaded blobs.
-  // Added as an experimental tool, and may be removed in future versions.
-  calculateMissingLayersDigests?: boolean;
   stagingDirPath?: string;
 }
 

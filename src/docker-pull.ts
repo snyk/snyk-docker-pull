@@ -4,11 +4,12 @@ import * as crypto from "crypto";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import * as tar from "tar-stream";
+import * as tar from "tar-fs";
 import { randomUUID } from "crypto";
 import { promisify } from "util";
 import { Layer } from "./common";
 import * as subProcess from "./sub-process";
+import * as tmp from "./tmp";
 
 import {
   DockerPullOptions,
@@ -89,7 +90,11 @@ export class DockerPull {
     );
     const t0 = Date.now();
     const layersConfigs: types.LayerConfig[] = manifest.layers;
-    const missingLayers = await this.getLayers(
+
+    const blobDir = tmp.dirSync();
+
+    const missingLayers = await this.downloadLayers(
+      blobDir,
       layersConfigs,
       registryBase,
       repo,
@@ -98,18 +103,14 @@ export class DockerPull {
       opt?.reqOptions
     );
 
-    const stagingDirPath = opt.stagingDirPath
-      ? opt.stagingDirPath
-      : os.tmpdir();
-
     const pullDuration = Date.now() - t0;
 
-    let imageDigest: string;
     const stagingDir: DirResult = this.createDownloadedImageDestination(
-      stagingDirPath,
+      opt.stagingDirPath,
       opt?.imageSavePath
     );
 
+    let imageDigest: string;
     try {
       if (manifest?.manifestContentType === contentTypes.OCI_MANIFEST_V1) {
         await this.buildOCIImage(
@@ -117,6 +118,7 @@ export class DockerPull {
           manifest,
           imageConfig,
           missingLayers,
+          blobDir,
           stagingDir
         );
       } else {
@@ -125,6 +127,7 @@ export class DockerPull {
           imageConfig,
           layersConfigs,
           missingLayers,
+          blobDir,
           stagingDir
         );
       }
@@ -153,7 +156,7 @@ export class DockerPull {
           ) {
             await link(
               path.join(stagingDir.name, "image.tar"),
-              path.join(stagingDirPath, `${name}-${randomUUID()}.tar`)
+              path.join(stagingDir.name, `${name}-${randomUUID()}.tar`)
             );
             break;
           }
@@ -162,6 +165,7 @@ export class DockerPull {
         console.error("pullSaveRequest error: ", err);
       }
 
+      blobDir.removeCallback();
       if (loadImage) {
         stagingDir.removeCallback();
       }
@@ -173,15 +177,13 @@ export class DockerPull {
       cachedLayersDigests: [],
       missingLayersDigests: missingLayers.map((layer) => layer.config.digest),
       pullDuration,
-      missingLayersCalculatedDigests: opt.calculateMissingLayersDigests
-        ? missingLayers.map((layer) => this.calculateLayerDigest(layer))
-        : [],
       indexDigest,
       manifestDigest,
     };
   }
 
-  private async getLayers(
+  private async downloadLayers(
+    blobDir: DirResult,
     layersConfigs: types.LayerConfig[],
     registryBase,
     repo: string,
@@ -193,7 +195,9 @@ export class DockerPull {
   ): Promise<Layer[]> {
     return await Promise.all(
       layersConfigs.map(async (config: types.LayerConfig) => {
-        const blob: Buffer = await registryClient.getLayer(
+        const blobName = crypto.randomUUID();
+        await registryClient.downloadLayer(
+          path.join(blobDir.name, blobName),
           registryBase,
           repo,
           config.digest,
@@ -201,19 +205,9 @@ export class DockerPull {
           password,
           reqOptions
         );
-        return { config, blob };
+        return { config, blobName };
       })
     );
-  }
-
-  private calculateLayerDigest(layer: Layer): string {
-    const hashAlgorithm = layer.config.digest.split(":")[0];
-    const calculatedDigest = crypto
-      .createHash(hashAlgorithm)
-      .update(layer.blob)
-      .digest("hex");
-
-    return `${hashAlgorithm}:${calculatedDigest}`;
   }
 
   private async saveRequests(): Promise<SaveRequests> {
@@ -232,58 +226,67 @@ export class DockerPull {
     manifest: types.ImageManifest,
     imageConfig: Record<string, unknown>,
     layers: Layer[],
+    blobDir: DirResult,
     stagingDir: DirResult
   ): Promise<string> {
-    const pack = tar.pack();
+    const pack = tar.pack(blobDir.name, {
+      // write layers
+      entries: layers.map((layer) => layer.blobName),
+      map(header) {
+        const layer = layers.find((layer) => layer.blobName == header.name);
+        const digest = layer.config.digest.replace("sha256:", "");
+        header.name = path.join("blobs", "sha256", digest);
+        return header;
+      },
+      finalize: false,
+      finish(pack) {
+        const configContent = JSON.stringify(imageConfig);
+        const configDigest = imageDigest.replace("sha256:", "");
+        pack.entry(
+          { name: path.join("blobs", "sha256", configDigest) },
+          configContent
+        );
 
-    for (const layer of layers) {
-      const digest = layer.config.digest.replace("sha256:", "");
-      pack.entry({ name: path.join("blobs", "sha256", digest) }, layer.blob);
-    }
+        // Ensure config digest and size is accurate following serialization round trip
+        manifest.config.digest = `sha256:${configDigest}`;
+        manifest.config.size = Buffer.byteLength(configContent, "utf8");
 
-    const configContent = JSON.stringify(imageConfig);
-    const configDigest = imageDigest.replace("sha256:", "");
-    pack.entry(
-      { name: path.join("blobs", "sha256", configDigest) },
-      configContent
-    );
+        // Unset properties added by docker-registry-v2-client
+        manifest.indexDigest = undefined;
+        manifest.manifestDigest = undefined;
+        manifest.manifestContentType = undefined;
 
-    // Ensure config digest and size is accurate following serialization round trip
-    manifest.config.digest = `sha256:${configDigest}`;
-    manifest.config.size = Buffer.byteLength(configContent, "utf8");
+        const manifestContent = JSON.stringify(manifest);
+        const manifestDigest = crypto
+          .createHash("sha256")
+          .update(manifestContent)
+          .digest("hex")
+          .toLowerCase();
+        pack.entry(
+          { name: path.join("blobs", "sha256", manifestDigest) },
+          manifestContent
+        );
 
-    // Unset properties added by docker-registry-v2-client
-    manifest.indexDigest = undefined;
-    manifest.manifestDigest = undefined;
-    manifest.manifestContentType = undefined;
+        const indexContent = JSON.stringify({
+          schemaVersion: 2,
+          mediaType: contentTypes.OCI_INDEX_V1,
+          manifests: [
+            {
+              mediaType: contentTypes.OCI_MANIFEST_V1,
+              size: Buffer.byteLength(manifestContent, "utf8"),
+              digest: `sha256:${manifestDigest}`,
+            },
+          ],
+        });
+        pack.entry({ name: "index.json" }, indexContent);
 
-    const manifestContent = JSON.stringify(manifest);
-    const manifestDigest = crypto
-      .createHash("sha256")
-      .update(manifestContent)
-      .digest("hex")
-      .toLowerCase();
-    pack.entry(
-      { name: path.join("blobs", "sha256", manifestDigest) },
-      manifestContent
-    );
-
-    const indexContent = JSON.stringify({
-      schemaVersion: 2,
-      mediaType: contentTypes.OCI_INDEX_V1,
-      manifests: [
-        {
-          mediaType: contentTypes.OCI_MANIFEST_V1,
-          size: Buffer.byteLength(manifestContent, "utf8"),
-          digest: `sha256:${manifestDigest}`,
-        },
-      ],
-    });
-    pack.entry({ name: "index.json" }, indexContent);
-
-    const ociLayoutContent = JSON.stringify({ imageLayoutVersion: "1.0.0" });
-    pack.entry({ name: "oci-layout" }, ociLayoutContent, () => {
-      pack.finalize();
+        const ociLayoutContent = JSON.stringify({
+          imageLayoutVersion: "1.0.0",
+        });
+        pack.entry({ name: "oci-layout" }, ociLayoutContent, () => {
+          pack.finalize();
+        });
+      },
     });
 
     const imagePath = path.join(stagingDir.name, "image.tar");
@@ -301,29 +304,16 @@ export class DockerPull {
     imageConfig: Record<string, unknown>,
     layersConfigs: types.LayerConfig[],
     layers: Layer[],
+    blobDir: DirResult,
     stagingDir: DirResult
   ): Promise<string> {
-    const pack = tar.pack();
-
-    // write layers
     let parentDigest: string | undefined;
+    const layersMetadata: Record<string, { version: string; json: string }> =
+      {};
     for (const layerConfig of layersConfigs) {
       const digest = layerConfig.digest.replace("sha256:", "");
 
-      // write layer.tar
-      let blob: Buffer;
-      for (const layer of layers) {
-        if (layerConfig.digest === layer.config.digest) {
-          blob = layer.blob;
-          break;
-        }
-      }
-      if (!blob) {
-        throw new Error(`missing blob during build: ${digest}`);
-      }
-      pack.entry({ name: path.join(digest, "layer.tar") }, blob);
-
-      // write json
+      // generate json
       let json: Record<string, unknown> = Object.assign(
         {},
         { id: digest },
@@ -332,39 +322,68 @@ export class DockerPull {
       if (parentDigest) {
         json = Object.assign({ parent: parentDigest });
       }
-      pack.entry({ name: path.join(digest, "json") }, JSON.stringify(json));
       parentDigest = digest;
-
-      // write version
-      pack.entry({ name: path.join(digest, "VERSION") }, "1.0");
+      layersMetadata[digest] = {
+        json: JSON.stringify(json),
+        version: "1.0",
+      };
     }
 
-    imageDigest = imageDigest.replace("sha256:", "");
-    // write image json
-    pack.entry({ name: `${imageDigest}.json` }, JSON.stringify(imageConfig));
-
-    // write manifest.json
-    const manifestJson = [
-      {
-        Config: `${imageDigest}.json`,
-        RepoTags: null,
-        Layers: layersConfigs.map(
-          (config) => `${config.digest.replace("sha256:", "")}/layer.tar`
-        ),
+    const pack = tar.pack(blobDir.name, {
+      // write layers
+      entries: layers.map((layer) => layer.blobName),
+      map(header) {
+        const layer = layers.find((layer) => layer.blobName === header.name);
+        const digest = layer.config.digest.replace("sha256:", "");
+        header.name = path.join(digest, "layer.tar");
+        return header;
       },
-    ];
-    pack.entry({ name: "manifest.json" }, JSON.stringify(manifestJson), () => {
-      pack.finalize();
+      finalize: false,
+      finish(pack) {
+        for (const digest of Object.keys(layersMetadata)) {
+          const layerMetadata = layersMetadata[digest];
+          pack.entry({ name: path.join(digest, "json") }, layerMetadata.json);
+          pack.entry(
+            { name: path.join(digest, "VERSION") },
+            layerMetadata.version
+          );
+        }
+
+        imageDigest = imageDigest.replace("sha256:", "");
+
+        // write image json
+        pack.entry(
+          { name: `${imageDigest}.json` },
+          JSON.stringify(imageConfig)
+        );
+
+        // write manifest.json
+        const manifestJson = [
+          {
+            Config: `${imageDigest}.json`,
+            RepoTags: null,
+            Layers: layersConfigs.map(
+              (config) => `${config.digest.replace("sha256:", "")}/layer.tar`
+            ),
+          },
+        ];
+        pack.entry(
+          { name: "manifest.json" },
+          JSON.stringify(manifestJson),
+          () => {
+            pack.finalize();
+          }
+        );
+      },
     });
 
     const imagePath = path.join(stagingDir.name, "image.tar");
     const file = fs.createWriteStream(imagePath);
     pack.pipe(file);
 
-    return new Promise((resolve) => {
-      file.on("close", () => {
-        resolve(path.join(imagePath));
-      });
+    return new Promise((resolve, reject) => {
+      file.on("close", () => resolve(path.join(imagePath)));
+      file.on("error", (err) => reject(err));
     });
   }
 
@@ -398,20 +417,14 @@ export class DockerPull {
     imageSavePath: string | undefined
   ): DirResult {
     if (!imageSavePath) {
-      const name = fs.mkdtempSync(stagingDirPath + path.sep);
-      return {
-        name,
-        removeCallback: (): void => fs.rmSync(name, { recursive: true }),
-      };
+      return tmp.dirSync({ path: stagingDirPath });
     }
 
-    const dirResult: DirResult = {
+    return {
       name: imageSavePath,
       removeCallback: (): void => {
         /* do nothing */
       },
     };
-
-    return dirResult;
   }
 }
