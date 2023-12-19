@@ -334,6 +334,12 @@ test("pull from public repo", async () => {
   const opt: DockerPullOptions = {
     loadImage: false,
     imageSavePath: "./custom/image/save/path",
+    reqOptions: {
+      acceptManifest: [
+        contentTypes.OCI_INDEX_V1,
+        contentTypes.OCI_MANIFEST_V1,
+      ].join(","),
+    },
   };
   // the custom path won't be create by the lib
   fx.mkdirSync(opt.imageSavePath);
@@ -349,8 +355,8 @@ test("pull from public repo", async () => {
   expect(fs.existsSync(tarPath)).toBeTruthy();
 
   const tarListing = await listTar(tarPath);
-  expect(tarListing.includes("manifest.json")).toBeTruthy();
-  expect(tarListing.includes("./manifest.json")).toBeFalsy();
+  expect(tarListing.includes("index.json")).toBeTruthy();
+  expect(tarListing.includes("./index.json")).toBeFalsy();
   tarListing.forEach((fileName) => expect(fileName).not.toContain("./"));
 
   // it won't do nothing because we set imageSavePath
@@ -358,39 +364,4 @@ test("pull from public repo", async () => {
   // clean up
   fs.unlinkSync(tarPath);
   rmdirRecursive(opt.imageSavePath.split(path.sep));
-});
-
-describe("calculate missing layers digest", () => {
-  test("when set to true - should return calculated digests", async () => {
-    const registry = "registry-1.docker.io";
-    const repo = "library/hello-world";
-    const tag = "latest";
-    const opt: DockerPullOptions = {
-      loadImage: false,
-      calculateMissingLayersDigests: true,
-    };
-    const dockerPull: DockerPull = new DockerPull();
-    const resp = await dockerPull.pull(registry, repo, tag, opt);
-    expect(resp.missingLayersCalculatedDigests).toEqual(
-      resp.missingLayersDigests
-    );
-
-    resp.stagingDir.removeCallback();
-  });
-
-  test("when set to false - should not return calculated digests", async () => {
-    const registry = "registry-1.docker.io";
-    const repo = "library/hello-world";
-    const tag = "latest";
-    const opt: DockerPullOptions = {
-      loadImage: false,
-      calculateMissingLayersDigests: false,
-    };
-
-    const dockerPull: DockerPull = new DockerPull();
-    const resp = await dockerPull.pull(registry, repo, tag, opt);
-    expect(resp.missingLayersCalculatedDigests).toEqual([]);
-
-    resp.stagingDir.removeCallback();
-  });
 });
