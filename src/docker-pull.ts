@@ -91,7 +91,11 @@ export class DockerPull {
     const t0 = Date.now();
     const layersConfigs: types.LayerConfig[] = manifest.layers;
 
-    const blobDir = tmp.dirSync();
+    const stagingDirPath = opt.stagingDirPath
+      ? opt.stagingDirPath
+      : os.tmpdir();
+
+    const blobDir = tmp.dirSync({ path: stagingDirPath });
 
     const missingLayers = await this.downloadLayers(
       blobDir,
@@ -102,11 +106,6 @@ export class DockerPull {
       opt?.password,
       opt?.reqOptions
     );
-
-    const stagingDirPath = opt.stagingDirPath
-      ? opt.stagingDirPath
-      : os.tmpdir();
-
     const pullDuration = Date.now() - t0;
 
     let imageDigest: string;

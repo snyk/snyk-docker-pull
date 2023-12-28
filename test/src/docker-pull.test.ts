@@ -334,6 +334,7 @@ test("pull from public repo", async () => {
   const opt: DockerPullOptions = {
     loadImage: false,
     imageSavePath: "./custom/image/save/path",
+    stagingDirPath: "./tmp",
     reqOptions: {
       acceptManifest: [
         contentTypes.OCI_INDEX_V1,
@@ -343,6 +344,7 @@ test("pull from public repo", async () => {
   };
   // the custom path won't be create by the lib
   fx.mkdirSync(opt.imageSavePath);
+  fx.mkdirSync(opt.stagingDirPath);
 
   const dockerPull: DockerPull = new DockerPull();
   const resp = await dockerPull.pull(registry, repo, tag, opt);
@@ -364,4 +366,5 @@ test("pull from public repo", async () => {
   // clean up
   fs.unlinkSync(tarPath);
   rmdirRecursive(opt.imageSavePath.split(path.sep));
+  rmdirRecursive(opt.stagingDirPath.split(path.sep));
 });
