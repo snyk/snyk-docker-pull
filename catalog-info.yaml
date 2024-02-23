@@ -4,8 +4,8 @@ metadata:
   name: snyk-docker-pull
   annotations:
     github.com/project-slug: snyk/snyk-docker-pull
-    github.com/team-slug: snyk/container-integration
+    github.com/team-slug: snyk/orchestration-integrations
 spec:
   type: internal-library
   lifecycle: "-"
-  owner: container-integration
+  owner: orchestration-integrations

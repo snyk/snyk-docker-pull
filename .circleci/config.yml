@@ -2,8 +2,8 @@ version: 2.1
 
 orbs:
   node: circleci/node@5.1.0
-  prodsec: snyk/prodsec-orb@1.0
-  snyk: snyk/snyk@1.7.0
+  prodsec: snyk/prodsec-orb@1.1
+  snyk: snyk/snyk@2
   slack: circleci/slack@4.12.1
 
 defaults: &defaults
@@ -134,31 +134,14 @@ jobs:
       - run:
           name: Run tests
           command: npm run lint
-  scan-code:
+  security-scans:
     <<: *defaults
     steps:
       - checkout
       - attach_workspace:
           at: ~/snyk-docker-pull
-      - snyk/scan:
-          command: code test
-          fail-on-issues: true
-          severity-threshold: high
-          monitor-on-build: true
-          token-variable: MONITOR_SNYK_TOKEN
-      - notify_slack_on_failure
-  scan-deps:
-    <<: *defaults
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/snyk-docker-pull
-      - snyk/scan:
-          additional-arguments: --all-projects
-          fail-on-issues: true
-          severity-threshold: high
-          monitor-on-build: true
-          token-variable: MONITOR_SNYK_TOKEN
+      - prodsec/security_scans:
+          mode: auto
       - notify_slack_on_failure
   test:
     parameters:
@@ -213,15 +196,19 @@ workflows:
           name: Scan repository for secrets
           context:
             - snyk-bot-slack
-          channel: container-integration-alerts
+          channel: team-integrations-alerts
 
       - install:
           name: Install
           context: nodejs-install
-          filters:
-            branches:
-              ignore:
-                - main
+
+      - security-scans:
+          name: Security Scans
+          context:
+            - analysis_integrations
+          requires:
+            - Install
+
       - lint:
           name: Lint
           context: nodejs-install
@@ -234,7 +221,7 @@ workflows:
       - build:
           name: Build
           requires:
-            - Install
+            - Security Scans
           filters:
             branches:
               ignore:
@@ -251,27 +238,12 @@ workflows:
             branches:
               ignore:
                 - main
-      - scan-code:
-          name: Snyk Code Scan
-          context: team-container-integration-snyk
-          requires:
-            - Install
-          filters:
-            branches:
-              ignore:
-                - main
-      - scan-deps:
-          name: Snyk Open Source Scan
-          context: team-container-integration-snyk
-          requires:
-            - Install
-          filters:
-            branches:
-              ignore:
-                - main
+
       - release:
           name: Release to GitHub
           context: nodejs-lib-release
+          requires:
+            - Security Scans
           filters:
             branches:
               only:
