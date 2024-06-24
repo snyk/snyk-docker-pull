@@ -1,3 +1,5 @@
+import { types } from "@snyk/docker-registry-v2-client";
+
 export interface DirResult {
   name: string;
   removeCallback: () => void;
@@ -27,6 +29,7 @@ export interface DockerPullOptions {
   loadImage?: boolean;
   imageSavePath?: string;
   stagingDirPath?: string;
+  platform?: types.Platform;
 }
 
 export interface SaveRequests {

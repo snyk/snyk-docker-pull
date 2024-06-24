@@ -69,7 +69,8 @@ export class DockerPull {
       tag,
       opt?.username,
       opt?.password,
-      opt?.reqOptions
+      opt?.reqOptions,
+      opt?.platform
     );
 
     const indexDigest = manifest.indexDigest ?? undefined;
