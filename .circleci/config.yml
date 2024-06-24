@@ -9,7 +9,7 @@ orbs:
 defaults: &defaults
   resource_class: small
   docker:
-    - image: cimg/node:18.19
+    - image: cimg/node:20.15
   working_directory: ~/snyk-docker-pull
 
 executors:
