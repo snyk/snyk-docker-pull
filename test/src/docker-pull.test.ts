@@ -366,16 +366,116 @@ test("pull from public repo", async () => {
   rmdirRecursive(opt.imageSavePath.split(path.sep));
 });
 
-test("pull from public repo arm64 image architecture", async () => {
+test("pull from public repo arm64/v8 image architecture", async () => {
   const registry = "registry-1.docker.io";
   const repo = "library/debian";
   const tag = "12.0";
   const os = "linux";
   const arch = "arm64";
+  const variant = "v8";
   const debianArm64ManifestDigest =
     "sha256:345b9265e89c123f994b724b9a4761dbc91c5759c144d01292ca56a338170801";
   const arm64IndexDigest =
     "sha256:3d868b5eb908155f3784317b3dda2941df87bbbbaa4608f84881de66d9bb297b";
+
+  const opt: DockerPullOptions = {
+    loadImage: false,
+    imageSavePath: "./custom/image/save/path",
+    reqOptions: {
+      acceptManifest: [
+        contentTypes.OCI_INDEX_V1,
+        contentTypes.OCI_MANIFEST_V1,
+        contentTypes.MANIFEST_V2,
+        contentTypes.MANIFEST_LIST_V2,
+      ].join(","),
+    },
+    platform: { os: os, architecture: arch, variant: variant },
+  };
+  // the custom path won't be create by the lib
+  fx.mkdirSync(opt.imageSavePath);
+
+  const dockerPull: DockerPull = new DockerPull();
+  const resp = await dockerPull.pull(registry, repo, tag, opt);
+
+  const manifestDigest = resp.manifestDigest;
+  const indexDigest = resp.indexDigest;
+
+  expect(manifestDigest).toBeDefined();
+  expect(indexDigest).toBeDefined();
+
+  expect(manifestDigest).toEqual(debianArm64ManifestDigest);
+  expect(indexDigest).toEqual(arm64IndexDigest);
+  const tarPath = path.join(resp.stagingDir.name, "image.tar");
+  expect(tarPath).toBe(path.join(resp.stagingDir.name, "image.tar"));
+  expect(fs.existsSync(tarPath)).toBeTruthy();
+
+  // it won't do nothing because we set imageSavePath
+  resp.stagingDir.removeCallback();
+  // clean up
+  fs.unlinkSync(tarPath);
+  rmdirRecursive(opt.imageSavePath.split(path.sep));
+});
+
+test("pull from public repo arm/v7 image architecture", async () => {
+  const registry = "registry-1.docker.io";
+  const repo = "library/debian";
+  const tag = "unstable-slim";
+  const os = "linux";
+  const arch = "arm";
+  const variant = "v7";
+  const debianArmv7ManifestDigest =
+    "sha256:11e548e55f0276e86a890464c6f9e8c36ff066f2c524eab49286efabccd6cc12";
+  const armv7IndexDigest =
+    "sha256:7a9076851517a85143d65add8ebb7abff5dd7017cdfb3f570a81d690289be88b";
+
+  const opt: DockerPullOptions = {
+    loadImage: false,
+    imageSavePath: "./custom/image/save/path",
+    reqOptions: {
+      acceptManifest: [
+        contentTypes.OCI_INDEX_V1,
+        contentTypes.OCI_MANIFEST_V1,
+        contentTypes.MANIFEST_V2,
+        contentTypes.MANIFEST_LIST_V2,
+      ].join(","),
+    },
+    platform: { os: os, architecture: arch, variant: variant },
+  };
+  // the custom path won't be create by the lib
+  fx.mkdirSync(opt.imageSavePath);
+
+  const dockerPull: DockerPull = new DockerPull();
+  const resp = await dockerPull.pull(registry, repo, tag, opt);
+
+  const manifestDigest = resp.manifestDigest;
+  const indexDigest = resp.indexDigest;
+
+  expect(manifestDigest).toBeDefined();
+  expect(indexDigest).toBeDefined();
+
+  expect(manifestDigest).toEqual(debianArmv7ManifestDigest);
+  expect(indexDigest).toEqual(armv7IndexDigest);
+  const tarPath = path.join(resp.stagingDir.name, "image.tar");
+  expect(tarPath).toBe(path.join(resp.stagingDir.name, "image.tar"));
+  expect(fs.existsSync(tarPath)).toBeTruthy();
+
+  // it won't do nothing because we set imageSavePath
+  resp.stagingDir.removeCallback();
+  // clean up
+  fs.unlinkSync(tarPath);
+  rmdirRecursive(opt.imageSavePath.split(path.sep));
+});
+
+test("pull from public repo linux/386 image architecture", async () => {
+  const registry = "registry-1.docker.io";
+  const repo = "library/alpine";
+  const tag = "latest";
+  const os = "linux";
+  const arch = "386";
+  const linuxManifestDigest =
+    "sha256:ac77ebc035f69184acb2660028580c9053f6d0f892de7933e1456d8b5e0ac085";
+  const linuxIndexDigest =
+    "sha256:b89d9c93e9ed3597455c90a0b88a8bbb5cb7188438f70953fede212a0c4394e0";
 
   const opt: DockerPullOptions = {
     loadImage: false,
@@ -402,8 +502,8 @@ test("pull from public repo arm64 image architecture", async () => {
   expect(manifestDigest).toBeDefined();
   expect(indexDigest).toBeDefined();
 
-  expect(manifestDigest).toEqual(debianArm64ManifestDigest);
-  expect(indexDigest).toEqual(arm64IndexDigest);
+  expect(manifestDigest).toEqual(linuxManifestDigest);
+  expect(indexDigest).toEqual(linuxIndexDigest);
   const tarPath = path.join(resp.stagingDir.name, "image.tar");
   expect(tarPath).toBe(path.join(resp.stagingDir.name, "image.tar"));
   expect(fs.existsSync(tarPath)).toBeTruthy();
