@@ -196,7 +196,7 @@ workflows:
           name: Scan repository for secrets
           context:
             - snyk-bot-slack
-          channel: team-integrations-alerts
+          channel: snyk-on-snyk-analysis_test-enrichment
 
       - install:
           name: Install
@@ -205,7 +205,7 @@ workflows:
       - security-scans:
           name: Security Scans
           context:
-            - analysis_integrations
+            - analysis_test-enrichment
           requires:
             - Install
 
