@@ -1,18 +1,18 @@
-import * as path from "path";
-import * as os from "os";
 import * as fs from "fs";
 import * as glob from "glob";
 import * as fx from "mkdir-recursive";
+import * as os from "os";
+import * as path from "path";
 
+import { contentTypes } from "@snyk/docker-registry-v2-client";
 import { DockerPull } from "../../src/docker-pull";
 import { DockerPullOptions } from "../../src/types";
 import {
-  removeImage,
-  listTar,
   getTarFileContents,
   getTarFileDigest,
+  listTar,
+  removeImage,
 } from "../utils";
-import { contentTypes } from "@snyk/docker-registry-v2-client";
 
 function rmdirRecursive(customPath: string[]): void {
   if (customPath.length < 2) {
@@ -419,14 +419,17 @@ test("pull from public repo arm64/v8 image architecture", async () => {
 test("pull from public repo arm/v7 image architecture", async () => {
   const registry = "registry-1.docker.io";
   const repo = "library/debian";
-  const tag = "unstable-slim";
+  // tags are mutable, so use a tag with a date for Debian, to reduce the chance of SHAs changing underneath,
+  // which would lead to a test failure. Even with dates, this test is prone to failures caused by an update of the
+  // image the tag points to.
+  const tag = "unstable-20240926-slim";
   const os = "linux";
   const arch = "arm";
   const variant = "v7";
   const debianArmv7ManifestDigest =
-    "sha256:11e548e55f0276e86a890464c6f9e8c36ff066f2c524eab49286efabccd6cc12";
+    "sha256:40a73b80ed6aa92fd449dd7471630189c4bf594507a557ca3d95060a7779c7e4";
   const armv7IndexDigest =
-    "sha256:7a9076851517a85143d65add8ebb7abff5dd7017cdfb3f570a81d690289be88b";
+    "sha256:bfdb0ef563e702dbf3f1dfd79916d1e0fc21d7dc4b1a29720598f373b3cd4025";
 
   const opt: DockerPullOptions = {
     loadImage: false,
