@@ -427,7 +427,7 @@ test("pull from public repo arm/v7 image architecture", async () => {
   const arch = "arm";
   const variant = "v7";
   const debianArmv7ManifestDigest =
-    "sha256:40a73b80ed6aa92fd449dd7471630189c4bf594507a557ca3d95060a7779c7e4";
+    "sha256:f7e37a581e0adb1cfa0f07c7671a7b0967095552bb5ebf04156724095ab12dd3";
   const armv7IndexDigest =
     "sha256:bfdb0ef563e702dbf3f1dfd79916d1e0fc21d7dc4b1a29720598f373b3cd4025";
 
