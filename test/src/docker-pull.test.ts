@@ -420,8 +420,10 @@ test("pull from public repo arm/v7 image architecture", async () => {
   const registry = "registry-1.docker.io";
   const repo = "library/debian";
   // tags are mutable, so use a tag with a date for Debian, to reduce the chance of SHAs changing underneath,
-  // which would lead to a test failure. Even with dates, this test is prone to failures caused by an update of the
-  // image the tag points to.
+  // which would lead to a test failure. Tags like "latest" or "unstable-slim" change frequently, because they point
+  // to the most recent image created, while the ones with dates are pointing to a set date when the image was built.
+  // Even with date tags, this test is prone to failures caused by an update of the image the tag points to, like when
+  // older images receive a security patch and are rebuilt.
   const tag = "unstable-20240926-slim";
   const os = "linux";
   const arch = "arm";
@@ -472,13 +474,13 @@ test("pull from public repo arm/v7 image architecture", async () => {
 test("pull from public repo linux/386 image architecture", async () => {
   const registry = "registry-1.docker.io";
   const repo = "library/alpine";
-  const tag = "latest";
+  const tag = "3.20";
   const os = "linux";
   const arch = "386";
   const linuxManifestDigest =
-    "sha256:ac77ebc035f69184acb2660028580c9053f6d0f892de7933e1456d8b5e0ac085";
+    "sha256:b3e87f642f5c48cdc7556c3e03a0d63916bd0055ba6edba7773df3cb1a76f224";
   const linuxIndexDigest =
-    "sha256:b89d9c93e9ed3597455c90a0b88a8bbb5cb7188438f70953fede212a0c4394e0";
+    "sha256:beefdbd8a1da6d2915566fde36db9db0b524eb737fc57cd1367effd16dc0d06d";
 
   const opt: DockerPullOptions = {
     loadImage: false,
