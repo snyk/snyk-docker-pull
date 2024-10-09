@@ -61,9 +61,9 @@ commands:
     steps:
       - slack/notify:
           branch_pattern: main
-          channel: container-integration-deployment
+          channel: test-enrichment-deployment
           event: fail
-          mentions: "@team-container-integration"
+          mentions: "@testenrichers"
           custom: |
             {
               "blocks": [
