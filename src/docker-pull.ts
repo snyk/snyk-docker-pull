@@ -56,6 +56,9 @@ export class DockerPull {
       });
   }
 
+  /**
+   * Downloads an image from a Container Registry.
+   */
   public async pull(
     registryBase: string,
     repo: string,
