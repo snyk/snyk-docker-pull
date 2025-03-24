@@ -228,7 +228,9 @@ workflows:
                 - main
       - test:
           name: Test with node v<< matrix.node-version >>
-          context: nodejs-install
+          context:
+            - container-registry-pull-credentials
+            - nodejs-install
           requires:
             - Install
           matrix:
