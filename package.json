@@ -40,7 +40,7 @@
   "dependencies": {
     "@snyk/docker-registry-v2-client": "2.15.0",
     "child-process": "^1.0.2",
-    "tar-fs": "^3.0.4"
+    "tar-fs": "^3.0.7"
   },
   "release": {
     "branches": [
