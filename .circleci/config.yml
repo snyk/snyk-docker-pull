@@ -61,9 +61,9 @@ commands:
     steps:
       - slack/notify:
           branch_pattern: main
-          channel: test-enrichment-deployment
+          channel: test-container-pipeline-info
           event: fail
-          mentions: "@testenrichers"
+          # mentions: "@testenrichers"
           custom: |
             {
               "blocks": [
@@ -196,7 +196,7 @@ workflows:
           name: Scan repository for secrets
           context:
             - snyk-bot-slack
-          channel: snyk-on-snyk-analysis_test-enrichment
+          channel: snyk-on-snyk-infrasec_container
 
       - install:
           name: Install
@@ -205,7 +205,7 @@ workflows:
       - security-scans:
           name: Security Scans
           context:
-            - analysis_test-enrichment
+            - infrasec_container
           requires:
             - Install
 

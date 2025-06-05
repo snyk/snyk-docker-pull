@@ -12,7 +12,7 @@ _Instructions on how to run this locally, background context, what to review, qu
 
 ### More information
 
-- Jira ticket: https://snyksec.atlassian.net/browse/CIT-0000
+- Jira ticket: https://snyksec.atlassian.net/browse/CN-0000
 - Slack thread: https://snyk.slack.com/archives
 - Documentation: N/A
 
