@@ -206,6 +206,7 @@ workflows:
           name: Security Scans
           context:
             - infrasec_container
+            - prodsec-orb-runtime
           requires:
             - Install
 
