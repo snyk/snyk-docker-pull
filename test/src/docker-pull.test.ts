@@ -478,9 +478,9 @@ test("pull from public repo linux/386 image architecture", async () => {
   const os = "linux";
   const arch = "386";
   const linuxManifestDigest =
-    "sha256:367c8801047a3ab67a580e2ab142a2018d00e43b3573d81519a8f79576fbdbba";
+    "sha256:aecf0fcf2640d401102308301e4dcc2fa0acb1608e098ae8e7bc97843cb2ca2f";
   const linuxIndexDigest =
-    "sha256:de4fe7064d8f98419ea6b49190df1abbf43450c1702eeb864fe9ced453c1cc5f";
+    "sha256:765942a4039992336de8dd5db680586e1a206607dd06170ff0a37267a9e01958";
 
   const opt: DockerPullOptions = {
     loadImage: false,
