@@ -506,10 +506,10 @@ test("pull from public repo linux/386 image architecture", async () => {
   // Verify digests are returned with correct format (sha256 with 64 hex characters)
   expect(manifestDigest).toMatch(/^sha256:[a-f0-9]{64}$/);
   expect(indexDigest).toMatch(/^sha256:[a-f0-9]{64}$/);
-  
+
   // Verify they are different (index digest != manifest digest for multi-arch)
   expect(manifestDigest).not.toEqual(indexDigest);
-  
+
   const tarPath = path.join(resp.stagingDir.name, "image.tar");
   expect(tarPath).toBe(path.join(resp.stagingDir.name, "image.tar"));
   expect(fs.existsSync(tarPath)).toBeTruthy();
