@@ -27,8 +27,8 @@ commands:
       - checkout
       - restore_cache:
           keys:
-            - v1-npm-cache-{{ checksum "package-lock.json" }}
-            - v1-npm-cache-
+            - v2-npm-cache-{{ checksum "package.json" }}
+            - v2-npm-cache-
       - run:
           name: Use snyk-main npmjs user
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
@@ -36,7 +36,7 @@ commands:
           name: Install dependencies
           command: npm install
       - save_cache:
-          key: v1-npm-cache-{{ checksum "package-lock.json" }}
+          key: v2-npm-cache-{{ checksum "package.json" }}
           paths:
             - ~/.npm
       - persist_to_workspace:
@@ -206,6 +206,7 @@ workflows:
           name: Security Scans
           context:
             - infrasec_container
+            - prodsec-orb-runtime
           requires:
             - Install
 
