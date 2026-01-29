@@ -187,7 +187,7 @@ jobs:
           command: npm run build
       - run:
           name: Release on GitHub
-          command: npx semantic-release@24.2.9
+          command: npx semantic-release
 workflows:
   version: 2
   test_and_release:
