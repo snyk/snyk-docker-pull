@@ -73,7 +73,7 @@ export interface DockerPullOptions {
   password?: string;
 
   /**
-   * Additional request options.
+   * Additional request options to be passed to the container registry client.
    */
   reqOptions?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -102,6 +102,11 @@ export interface DockerPullOptions {
    * Set platform if server is multi-platform capable.
    */
   platform?: types.Platform;
+
+  /**
+   * Optional observer to receive events from the container registry client.
+   */
+  observer?: types.ContainerRegistryClientObserver;
 }
 
 export interface SaveRequests {
