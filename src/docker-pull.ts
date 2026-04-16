@@ -73,7 +73,8 @@ export class DockerPull {
       opt?.username,
       opt?.password,
       opt?.reqOptions,
-      opt?.platform
+      opt?.platform,
+      opt?.observer
     );
 
     const indexDigest = manifest.indexDigest ?? undefined;
@@ -90,7 +91,8 @@ export class DockerPull {
       imageConfigMetadata.digest,
       opt?.username,
       opt?.password,
-      opt?.reqOptions
+      opt?.reqOptions,
+      opt?.observer
     );
     const t0 = Date.now();
     const layersConfigs: types.LayerConfig[] = manifest.layers;
@@ -104,7 +106,8 @@ export class DockerPull {
       repo,
       opt?.username,
       opt?.password,
-      opt?.reqOptions
+      opt?.reqOptions,
+      opt?.observer
     );
 
     const stagingDirPath = opt.stagingDirPath
@@ -199,7 +202,8 @@ export class DockerPull {
     password?: string,
     // weak typing on the client
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    reqOptions = {} as any
+    reqOptions = {} as any,
+    observer?: types.ContainerRegistryClientObserver
   ): Promise<Layer[]> {
     return await Promise.all(
       layersConfigs.map(async (config: types.LayerConfig) => {
@@ -211,7 +215,8 @@ export class DockerPull {
           config.digest,
           username,
           password,
-          reqOptions
+          reqOptions,
+          observer
         );
         return { config, blobName };
       })
