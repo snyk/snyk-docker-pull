@@ -200,9 +200,7 @@ export class DockerPull {
     repo: string,
     username?: string,
     password?: string,
-    // weak typing on the client
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    reqOptions = {} as any,
+    reqOptions: registryClient.ClientOptions = {},
     observer?: types.ContainerRegistryClientObserver
   ): Promise<Layer[]> {
     return await Promise.all(

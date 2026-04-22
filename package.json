@@ -39,7 +39,7 @@
     "semantic-release": "^19.0.5"
   },
   "dependencies": {
-    "@snyk/docker-registry-v2-client": "^3.0.0",
+    "@snyk/docker-registry-v2-client": "^4.0.0",
     "child-process": "^1.0.2",
     "tar-fs": "^3.0.9"
   },
