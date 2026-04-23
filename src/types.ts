@@ -1,4 +1,4 @@
-import { types } from "@snyk/docker-registry-v2-client";
+import { types, ClientOptions } from "@snyk/docker-registry-v2-client";
 
 /**
  * Directory Result.
@@ -75,7 +75,7 @@ export interface DockerPullOptions {
   /**
    * Additional request options to be passed to the container registry client.
    */
-  reqOptions?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  reqOptions?: ClientOptions;
 
   /**
    * Load the image into the Docker container runtime. Default: `true`.
