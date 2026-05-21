@@ -10,29 +10,7 @@ A library that pulls container images.
 
 ## Tests
 
-### Infrastructure
-
-| Container Registry      | How to access                                                                                      |
-| ----------------------- | -------------------------------------------------------------------------------------------------- |
-| Docker Hub (docker-hub) | [DockerHub](https://hub.docker.com/), then 1Password: `Development > Okta - team magma Docker Hub` |
-
-### Local
-
-Set up your local env with the following env vars (see 1Password):
-Copy and paste the DRA env values
-```
-export SNYK_DRA_AZURE_USERNAME=...
-export SNYK_DRA_AZURE_PASSWORD=...
-...
-export SNYK_OCI_MULTI_ARCH_DOCKER_HUB_REPOSITORY=...
-export SNYK_DRA_DOCKER_HUB_REGISTRY_BASE=...
-```
-
-To run the tests:
-
-```console
-$ npm run test
-```
+See the internal Confluence page **snyk-docker-pull: Local Testing Setup** for environment variable names, 1Password credential locations, and instructions for running the test suite locally.
 
 ## Linting and formatting
 
