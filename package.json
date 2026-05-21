@@ -21,7 +21,7 @@
   "author": "snyk.io",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=12"
+    "node": ">=20"
   },
   "devDependencies": {
     "@types/jest": "^26.0.21",
