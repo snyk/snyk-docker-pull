@@ -235,7 +235,7 @@ workflows:
             - Install
           matrix:
             parameters:
-              node-version: ["14.21", "16.19", "18.15"]
+              node-version: ["16.19", "18.15", "20.15"]
           filters:
             branches:
               ignore:
