@@ -2,6 +2,10 @@
 
 A library that pulls container images.
 
+## Contributing
+
+This repository is closed to public contributions.
+
 ## API
 
 | Function              | Description                                  |
