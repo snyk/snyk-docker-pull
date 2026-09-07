@@ -61,7 +61,7 @@ commands:
     steps:
       - slack/notify:
           branch_pattern: main
-          channel: test-container-pipeline-info
+          channel: team-sca-scanners-alerts
           event: fail
           # mentions: "@testenrichers"
           custom: |
@@ -196,7 +196,7 @@ workflows:
           context:
             - snyk-bot-slack
             - prodsec-orb-runtime
-          channel: snyk-on-snyk-infrasec_container
+          channel: snyk-vuln-alerts-sca
 
       - install:
           name: Install
