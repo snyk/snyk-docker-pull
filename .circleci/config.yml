@@ -4,7 +4,6 @@ orbs:
   node: circleci/node@5.1.0
   prodsec: snyk/prodsec-orb@1
   snyk: snyk/snyk@2
-  slack: circleci/slack@4.12.1
 
 defaults: &defaults
   resource_class: small
@@ -57,69 +56,6 @@ commands:
             git merge --no-edit "$CIRCLE_BRANCH"
       - attach_workspace:
           at: ~/snyk-docker-pull
-  notify_slack_on_failure:
-    steps:
-      - slack/notify:
-          branch_pattern: main
-          channel: team-sca-scanners-alerts
-          event: fail
-          # mentions: "@testenrichers"
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "CICD pipeline failed :circleci-fail:",
-                    "emoji": true
-                  }
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Project*: ${CIRCLE_PROJECT_REPONAME}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Job*: ${CIRCLE_JOB}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Branch*: ${CIRCLE_BRANCH}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Author*: ${CIRCLE_USERNAME}"
-                    }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Mentions*: ${SLACK_PARAM_MENTIONS}"
-                    }
-                  ],
-                  "accessory": {
-                    "type": "button",
-                    "text": {
-                      "type": "plain_text",
-                      "emoji": true,
-                      "text": "View Job"
-                    },
-                    "value": "${CIRCLE_BUILD_URL}"
-                  }
-                }
-              ]
-            }
-
 jobs:
   install:
     <<: *defaults
@@ -142,7 +78,6 @@ jobs:
           at: ~/snyk-docker-pull
       - prodsec/security_scans:
           mode: auto
-      - notify_slack_on_failure
   test:
     parameters:
       node-version:
@@ -205,7 +140,7 @@ workflows:
       - security-scans:
           name: Security Scans
           context:
-            - infrasec_container
+            - engines_sca-scanners
             - prodsec-orb-runtime
           requires:
             - Install
