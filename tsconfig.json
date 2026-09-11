@@ -9,7 +9,8 @@
     "module": "commonjs",
     "sourceMap": true,
     "declaration": true,
-    "importHelpers": true
+    "importHelpers": true,
+    "skipLibCheck": true
   },
   "include": [
     "./src/**/*",
