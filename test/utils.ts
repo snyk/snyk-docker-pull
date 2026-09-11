@@ -1,8 +1,9 @@
 import * as crypto from "crypto";
 import { createReadStream } from "fs";
-import * as internal from "stream";
-import { extract, Extract } from "tar-stream";
+import { extract, Extract, ExtractEvents } from "tar-stream";
 import * as subProcess from "../src/sub-process";
+
+type EntryStream = ExtractEvents["entry"][1];
 
 const DEFAULT_CWD = undefined;
 const DEFAULT_ENV = undefined;
@@ -36,7 +37,7 @@ export async function listTar(tarFilePath: string): Promise<string[]> {
       stream.resume(); // auto drain the stream
     });
 
-    tarExtractor.on("finish", resolve);
+    tarExtractor.on("finish", () => resolve(undefined));
     tarExtractor.on("error", (error) => reject(error));
 
     createReadStream(tarFilePath).pipe(tarExtractor);
@@ -79,7 +80,7 @@ export async function getTarFileDigest(
     .digest("hex");
 }
 
-async function streamToBuffer(stream: internal.PassThrough): Promise<Buffer> {
+async function streamToBuffer(stream: EntryStream): Promise<Buffer> {
   return new Promise<Buffer>((resolve, reject) => {
     stream.on("error", (error) => reject(error));
 
