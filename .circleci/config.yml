@@ -1,9 +1,11 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@5.1.0
+  # Snyk-owned orbs: track the latest release of the major version
   prodsec: snyk/prodsec-orb@1
   snyk: snyk/snyk@2
+  # Third-party orbs: always pin an exact version
+  node: circleci/node@7.2.1
 
 defaults: &defaults
   resource_class: small
