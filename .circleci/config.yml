@@ -10,7 +10,7 @@ orbs:
 defaults: &defaults
   resource_class: small
   docker:
-    - image: cimg/node:22.14
+    - image: cimg/node:22
   working_directory: ~/snyk-docker-pull
 
 executors:
@@ -173,7 +173,7 @@ workflows:
             - Install
           matrix:
             parameters:
-              node-version: ["16.19", "18.15", "20.15"]
+              node-version: ["22", "24", "26"]
           filters:
             branches:
               ignore:
