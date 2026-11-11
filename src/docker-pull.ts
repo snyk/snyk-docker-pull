@@ -63,7 +63,7 @@ export class DockerPull {
     registryBase: string,
     repo: string,
     tag: string,
-    opt?: DockerPullOptions
+    opt?: DockerPullOptions,
   ): Promise<DockerPullResult> {
     const loadImage = opt?.loadImage === undefined ? true : opt.loadImage;
     const manifest: types.ImageManifest = await registryClient.getManifest(
@@ -74,7 +74,7 @@ export class DockerPull {
       opt?.password,
       opt?.reqOptions,
       opt?.platform,
-      opt?.observer
+      opt?.observer,
     );
 
     const indexDigest = manifest.indexDigest ?? undefined;
@@ -92,7 +92,7 @@ export class DockerPull {
       opt?.username,
       opt?.password,
       opt?.reqOptions,
-      opt?.observer
+      opt?.observer,
     );
     const t0 = Date.now();
     const layersConfigs: types.LayerConfig[] = manifest.layers;
@@ -107,7 +107,7 @@ export class DockerPull {
       opt?.username,
       opt?.password,
       opt?.reqOptions,
-      opt?.observer
+      opt?.observer,
     );
 
     const stagingDirPath = opt.stagingDirPath
@@ -119,7 +119,7 @@ export class DockerPull {
     let imageDigest: string;
     const stagingDir: DirResult = this.createDownloadedImageDestination(
       stagingDirPath,
-      opt?.imageSavePath
+      opt?.imageSavePath,
     );
 
     try {
@@ -130,7 +130,7 @@ export class DockerPull {
           imageConfig,
           missingLayers,
           blobDir,
-          stagingDir
+          stagingDir,
         );
       } else {
         await this.buildImage(
@@ -139,7 +139,7 @@ export class DockerPull {
           layersConfigs,
           missingLayers,
           blobDir,
-          stagingDir
+          stagingDir,
         );
       }
 
@@ -158,16 +158,16 @@ export class DockerPull {
           tag,
         };
         for (const [name, requestMatcher] of Object.entries(
-          await this.saveRequests()
+          await this.saveRequests(),
         )) {
           if (
             Object.keys(requestMatcher).every(
-              (key) => requestMatcher[key] === saveMatcher[key]
+              (key) => requestMatcher[key] === saveMatcher[key],
             )
           ) {
             await link(
               path.join(stagingDir.name, "image.tar"),
-              path.join(stagingDirPath, `${name}-${randomUUID()}.tar`)
+              path.join(stagingDirPath, `${name}-${randomUUID()}.tar`),
             );
             break;
           }
@@ -201,7 +201,7 @@ export class DockerPull {
     username?: string,
     password?: string,
     reqOptions: registryClient.ClientOptions = {},
-    observer?: types.ContainerRegistryClientObserver
+    observer?: types.ContainerRegistryClientObserver,
   ): Promise<Layer[]> {
     return await Promise.all(
       layersConfigs.map(async (config: types.LayerConfig) => {
@@ -214,10 +214,10 @@ export class DockerPull {
           username,
           password,
           reqOptions,
-          observer
+          observer,
         );
         return { config, blobName };
-      })
+      }),
     );
   }
 
@@ -238,7 +238,7 @@ export class DockerPull {
     imageConfig: Record<string, unknown>,
     layers: Layer[],
     blobDir: DirResult,
-    stagingDir: DirResult
+    stagingDir: DirResult,
   ): Promise<string> {
     const pack = tar.pack(blobDir.name, {
       // write layers
@@ -255,7 +255,7 @@ export class DockerPull {
         const configDigest = imageDigest.replace("sha256:", "");
         pack.entry(
           { name: path.join("blobs", "sha256", configDigest) },
-          configContent
+          configContent,
         );
 
         // Ensure config digest and size is accurate following serialization round trip
@@ -275,7 +275,7 @@ export class DockerPull {
           .toLowerCase();
         pack.entry(
           { name: path.join("blobs", "sha256", manifestDigest) },
-          manifestContent
+          manifestContent,
         );
 
         const indexContent = JSON.stringify({
@@ -316,7 +316,7 @@ export class DockerPull {
     layersConfigs: types.LayerConfig[],
     layers: Layer[],
     blobDir: DirResult,
-    stagingDir: DirResult
+    stagingDir: DirResult,
   ): Promise<string> {
     // generate layer metadata
     let parentDigest: string | undefined;
@@ -326,7 +326,7 @@ export class DockerPull {
       let json: Record<string, unknown> = Object.assign(
         {},
         { id: digest },
-        DEFAULT_LAYER_JSON
+        DEFAULT_LAYER_JSON,
       );
       if (parentDigest) {
         json = Object.assign({ parent: parentDigest });
@@ -361,7 +361,7 @@ export class DockerPull {
         // write image json
         pack.entry(
           { name: `${imageDigest}.json` },
-          JSON.stringify(imageConfig)
+          JSON.stringify(imageConfig),
         );
 
         // write manifest.json
@@ -370,7 +370,7 @@ export class DockerPull {
             Config: `${imageDigest}.json`,
             RepoTags: null,
             Layers: layersConfigs.map(
-              (config) => `${config.digest.replace("sha256:", "")}/layer.tar`
+              (config) => `${config.digest.replace("sha256:", "")}/layer.tar`,
             ),
           },
         ];
@@ -379,7 +379,7 @@ export class DockerPull {
           JSON.stringify(manifestJson),
           () => {
             pack.finalize();
-          }
+          },
         );
       },
     });
@@ -398,14 +398,14 @@ export class DockerPull {
     registryBase: string,
     repo: string,
     tag: string,
-    stagingDir: DirResult
+    stagingDir: DirResult,
   ): Promise<string> {
     const dockerBinary: string = await DockerPull.findDockerBinary();
     const stdout = (
       await subProcess.execute(
         dockerBinary,
         ["load", "-i", "image.tar"],
-        stagingDir.name
+        stagingDir.name,
       )
     ).stdout;
     // Loaded image ID: sha256:36456e9e9cb7c4b17d97461a5aeb062a481401e3d2b559285c7083d8e7f8efa6
@@ -421,7 +421,7 @@ export class DockerPull {
 
   private createDownloadedImageDestination(
     stagingDirPath: string,
-    imageSavePath: string | undefined
+    imageSavePath: string | undefined,
   ): DirResult {
     if (!imageSavePath) {
       return tmp.dirSync({ path: stagingDirPath });

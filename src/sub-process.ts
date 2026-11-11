@@ -11,7 +11,7 @@ export async function execute(
   args?: string[],
   cwd?: string,
   env?: NodeJS.ProcessEnv,
-  shell = false
+  shell = false,
 ): Promise<CmdOutput> {
   const spawnOptions: SpawnOptions = { shell };
   if (cwd) {

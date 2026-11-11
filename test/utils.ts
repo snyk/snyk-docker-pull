@@ -15,7 +15,7 @@ export async function removeImage(sha: string): Promise<subProcess.CmdOutput> {
       ["rmi", `${sha}`],
       DEFAULT_CWD,
       DEFAULT_ENV,
-      true
+      true,
     );
   } catch (err) {
     const stderr: string = err.stderr;
@@ -47,7 +47,7 @@ export async function listTar(tarFilePath: string): Promise<string[]> {
 
 export async function getTarFileContents(
   tarFilePath: string,
-  internalFilePath: string
+  internalFilePath: string,
 ): Promise<Buffer | null> {
   return await new Promise((resolve, reject) => {
     const tarExtractor: Extract = extract();
@@ -72,7 +72,7 @@ export async function getTarFileContents(
 export async function getTarFileDigest(
   tarFilePath: string,
   internalFilePath: string,
-  hashAlgorithm: string
+  hashAlgorithm: string,
 ): Promise<string> {
   return crypto
     .createHash(hashAlgorithm)

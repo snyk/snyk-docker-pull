@@ -44,7 +44,7 @@ test("private image pull and load", async () => {
     "repo" : "${process.env.SNYK_DRA_DOCKER_HUB_REPOSITORY}",
     "tag" : "alpine"
   }
-}`
+}`,
   );
 
   const dockerPull: DockerPull = new DockerPull();
@@ -52,7 +52,7 @@ test("private image pull and load", async () => {
     "registry-1.docker.io",
     repo,
     "alpine",
-    opt
+    opt,
   );
 
   const imageDigest = dockerPullResult.imageDigest;
@@ -86,7 +86,7 @@ test("private image pull and build", async () => {
     "repo" : "${process.env.SNYK_DRA_DOCKER_HUB_REPOSITORY}",
     "tag" : "alpine"
   }
-}`
+}`,
   );
 
   const dockerPull: DockerPull = new DockerPull();
@@ -127,7 +127,7 @@ test("private multiarch manifest digest pull and build", async () => {
     "repo" : "${repo}",
     "tag" : "${multiArchManifestDigestWithAmd64}"
   }
-}`
+}`,
   );
 
   const dockerPull: DockerPull = new DockerPull();
@@ -135,7 +135,7 @@ test("private multiarch manifest digest pull and build", async () => {
     "registry-1.docker.io",
     repo,
     multiArchManifestDigestWithAmd64,
-    opt
+    opt,
   );
 
   const stagingDir = dockerPullResult.stagingDir;
@@ -176,7 +176,7 @@ test("private OCI multiarch manifest digest pull and build by digest", async () 
     "registry-1.docker.io",
     repo,
     multiArchManifestDigest,
-    opt
+    opt,
   );
 
   const stagingDir = dockerPullResult.stagingDir;
@@ -236,7 +236,7 @@ test("private OCI multiarch manifest digest pull and build by digest", async () 
   for (const digest of blobDigests) {
     expect(tarContents).toContain(`blobs/sha256/${digest}`);
     expect(
-      await getTarFileDigest(tarPath, `blobs/sha256/${digest}`, "sha256")
+      await getTarFileDigest(tarPath, `blobs/sha256/${digest}`, "sha256"),
     ).toEqual(digest);
   }
 });
@@ -262,7 +262,7 @@ test("private OCI multiarch manifest digest pull and build by tag", async () => 
     "registry-1.docker.io",
     repo,
     "latest",
-    opt
+    opt,
   );
 
   const stagingDir = dockerPullResult.stagingDir;
@@ -322,7 +322,7 @@ test("private OCI multiarch manifest digest pull and build by tag", async () => 
   for (const digest of blobDigests) {
     expect(tarContents).toContain(`blobs/sha256/${digest}`);
     expect(
-      await getTarFileDigest(tarPath, `blobs/sha256/${digest}`, "sha256")
+      await getTarFileDigest(tarPath, `blobs/sha256/${digest}`, "sha256"),
     ).toEqual(digest);
   }
 });
