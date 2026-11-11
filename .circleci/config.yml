@@ -10,7 +10,7 @@ orbs:
 defaults: &defaults
   resource_class: small
   docker:
-    - image: cimg/node:22
+    - image: cimg/node:24  # npm 11+ (Node 24) is needed for OIDC trusted publishing
   working_directory: ~/snyk-docker-pull
 
 executors:
@@ -61,6 +61,8 @@ commands:
 jobs:
   install:
     <<: *defaults
+    docker:
+      - image: cimg/node:22  # the test jobs reuse these node_modules
     steps:
       - install_deps
   lint:
