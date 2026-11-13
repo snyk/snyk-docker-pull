@@ -35,7 +35,7 @@ commands:
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
       - run:
           name: Install dependencies
-          command: npm install
+          command: npm ci
       - save_cache:
           key: v2-npm-cache-{{ checksum "package.json" }}
           paths:
@@ -107,7 +107,7 @@ jobs:
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
       - run:
           name: Install dependencies
-          command: npm install
+          command: npm ci
       - run:
           name: Run tests
           command: npm run build
@@ -117,7 +117,7 @@ jobs:
       - checkout_and_merge
       - run:
           name: Install dependencies
-          command: npm install
+          command: npm ci
       - run:
           name: Build
           command: npm run build
